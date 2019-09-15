@@ -29,7 +29,8 @@ func provideWriter () (io.Writer, error) {
 			"from the configuration file. [%s]", errY.Error ())
 		return nil, errors.New (errMssg)
 	}
-	logfile, errZ := os.Open (logfilePath, O_WRONLY | O_APPEND | O_SYNC, 0660)
+	logfile, errZ := os.OpenFile (logfilePath, os.O_WRONLY | os.O_APPEND | os.O_SYNC,
+		0660)
 	if errZ != nil {
 		errMssg := fmt.Sprintf ("RbS's logfile could not be opened. [%s]",
 			errZ. Error ())

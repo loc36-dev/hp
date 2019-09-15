@@ -29,7 +29,7 @@ func main () {
 	}
 	// ... }
 	// Handling of panic, if one should occur. { ...
-	defer func () {
+/*	defer func () {
 		panicReason := recover ()
 		if panicReason != nil {
 			osLog.Record ("Software is shutting down due to a panic.",
@@ -37,7 +37,7 @@ func main () {
 			fmt.Println (panicReason)
 		}
 	} ()
-	// ... }
+*/	// ... }
 	// Validating registers. { ...
 	validMains := map[string]*rxlib.Register {}
 	rbsSystem := system.New ()
@@ -142,6 +142,9 @@ func shutdown (shutdownOrder []string, shutdownKeys map[string]rxlib.MasterKey,
 	for _, someMain := range shutdownOrder {
 		netCentre.Disconnect (someMain)
 		masterKey := shutdownKeys[someMain]
+		if masterKey == nil {
+			continue
+		}
 		masterKey.ShutdownMain ()
 		if masterKey.ShutdownState () == rxlib.SsNotApplicable {
 			runtime.Gosched ()

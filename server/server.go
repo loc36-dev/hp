@@ -4,5 +4,5 @@ import (
 	"gopkg.in/qamarian-mmp/rxlib.v0"
 )
 
-func server (key rxlib.Key) () {
+func Server (key rxlib.Key) () {
 }
