@@ -1,8 +1,13 @@
 package server
 
 import (
-	"gopkg.in/qamarian-mmp/rxlib.v0"
+	"fmt"
+	"gopkg.in/gorilla/mux.v1"
+	"net/http"
 )
 
-func Server (key rxlib.Key) () {
+func serviceRequestServer (w *http.ResponseWriter, r *http.Request) {
+	// Fetch data from database
+	// Present fetched data
+	// Send data to user
 }
