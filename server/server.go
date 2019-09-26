@@ -1,6 +1,7 @@
 package server
 
 import (
+	"container/list"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -180,7 +181,49 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 
 	// ...1... }
 
-	// Present fetched data. ...1... {}
+	// Present fetched data. ...1... {
+	organizedResult := list.New ()
+	for _, state := range states {
+		addTimeToDay = func (time state, day *list.List) {
+			for e := day.Front (); e != nil; e = e.Next () {
+				if time.state < e.Value.state {
+					day.InsertBefore (time, e)
+					return
+				}
+			}
+			if e == nil {
+				day.PushFront (list.Element {time})
+			} else {
+				day.InsertAfter (list.Element {time}, e)
+			}
+		}
+		organized := false
+		for e := organizedResult.Front (); e != nil; e = e.Next () {
+			if state.day == e.Value.id {
+				addTimeToDay (state, e)
+				organized = true
+				break
+			}
+		}
+		if organized == true {
+			continue
+		}
+		for e := organizedResult.Front (); e != nil; e = e.Next () {
+			if state.day < e.Value.id {
+				newDay := day {state.day, list.New ()}
+				organizedResult.InsertBefore (list.Element {newDay}, e)
+				addTimeToDay (state, newDay.time)
+				break
+			}
+		}
+		if organized == true {
+			continue
+		}
+		newDay := day {state.day, list.New ()}
+		organizedResult.PushBack (list.Element {newDay}, e)
+		addTimeToDay (state, newDay.time)
+	}
+	// ...1... }
 
 	// Send data to user. ...1... {}
 }
@@ -197,4 +240,9 @@ type state struct {
 	day    string
 	time   string
 	sensor string
+}
+
+type day struct {
+	id string
+	time *list.List
 }
