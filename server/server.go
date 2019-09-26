@@ -31,7 +31,9 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 	// Data retrieval. ...2... {
 	request, okX := mex.Vars ()["locations"]
 	if okX == false || request == "" {
-		panic (err.New ("No request data was provided.", 1, 1))
+		errorID := qotaError.Value ()
+		qotaError.Grow ()
+		panic (err.New ("No request data was provided.", 1, errorID))
 	}
 	// ...2... }
 
@@ -39,22 +41,30 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 	locations := strings.Split (request, "_")
 	for _, location := range locations {
 		if location == "" {
-			panic (err.New ("A location data was omited.", 1, 2))
+			errorID := qotaError.Value ()
+			qotaError.Grow ()
+			panic (err.New ("A location data was omited.", 1, errorID))
 		}
 		data := strings.Split (location, "-")
 		if len (data) == 1 {
 			errMssg := fmt.Sprintf ("No day was specified for location '%s'.", data [0])
-			panic (err.New (errMssg, 1, 3))
+			errorID := qotaError.Value ()
+			qotaError.Grow ()
+			panic (err.New (errMssg, 1, errorID))
 		}
 		for index := 1; index <= len (data) - 1; index ++ {
 			if dayMonthYear.Match (data [index]) == false {
 				errMssg := fmt.Sprintf ("Data of invalid day requested for location '%s'.", data [0])
-				panic (err.New (errMssg, 1, 4))
+				errorID := qotaError.Value ()
+				qotaError.Grow ()
+				panic (err.New (errMssg, 1, errorID))
 			}
 		}
 	}
 	if len (locations) > 256 {
-		panic (err.New ("Data of more than 256 locations may not be requested at a time."), 1, 5)
+		errorID := qotaError.Value ()
+		qotaError.Grow ()
+		panic (err.New ("Data of more than 256 locations may not be requested at a time."), 1, errorID)
 	}
 	// ...2... }
 
@@ -73,17 +83,23 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 
 	errX := db.Ping ()
 	if errX != nil {
-		panic (err.New ("Database unreachable.", 2, 1, errX))
+		errorID := qotaInvalid.Value ()
+		qotaInvalid.Grow ()
+		panic (err.New ("Database unreachable.", 2, errorID, errX))
 	}
 
 	var noOfValidLocations int
 	errY := db.QueryRow (query, locations ...).Scan (&noOfValidLocations)
 	if errY != nil {
-		panic (err.New ("Unable to check if all locations exist.", 2, 2, errY))
+		errorID := qotaInvalid.Value ()
+		qotaInvalid.Grow ()
+		panic (err.New ("Unable to check if all locations exist.", 2, errorID, errY))
 	}
 
 	if noOfValidLocations != len (locations) {
-		panic (err.New ("Some locations do not exist.", 2, 3))
+		errorID := qotaInvalid.Value ()
+		qotaInvalid.Grow ()
+		panic (err.New ("Some locations do not exist.", 2, errorID))
 	}
 	// ...2... }
 
@@ -107,7 +123,9 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 	)
 	resultSet, errZ := db.Query (query, locations ...)
 	if errZ != nil {
-		panic (err.New ("Unable to fetch the sensor IDs of all locations.", 2, 4, errZ))
+		errorID := qotaInvalid.Value ()
+		qotaInvalid.Grow ()
+		panic (err.New ("Unable to fetch the sensor IDs of all locations.", 2, errorID, errZ))
 	}
 	for resultSet.Next () {
 		var (
@@ -116,7 +134,9 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 		)
 		errA := resultSet.Scan (&locationID, &sensorID)
 		if errA != nil {
-			panic (err.New ("Unable to fetch the sensor ID of a location.", 2, 5, errA))
+		errorID := qotaInvalid.Value ()
+		qotaInvalid.Grow ()
+			panic (err.New ("Unable to fetch the sensor ID of a location.", 2, errorID, errA))
 		}
 		sensors = append (sensors, sensorID)
 	}
@@ -140,13 +160,17 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 	)
 	resultSetB, errB := db.Query (queryC, sensors)
 	if errB != nil {
-		panic (err.New ("Unable to fetch the states of all locations.", 2, 6, errB))
+		errorID := qotaInvalid.Value ()
+		qotaInvalid.Grow ()
+		panic (err.New ("Unable to fetch the states of all locations.", 2, errorID, errB))
 	}
 	for resultSetB.Next () {
 		someState := state {}
 		errC := resultSetB.Scan (&someState.state, &someState.day, &someState.time, &someState.sensor)
 		if errC != nil {
-			panic (err.New ("Unable to fetch a state data.", 2, 7, errC))
+			errorID := qotaInvalid.Value ()
+			qotaInvalid.Grow ()
+			panic (err.New ("Unable to fetch a state data.", 2, errorID, errC))
 		}
 		states := append (states, someState)
 	}
@@ -164,6 +188,8 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 var (
 	dayMonthYear *Regexp
 	db *sql.DB
+	qotaInvalid *qota.Qota // Quota used for errors caused by invalid request.
+	qotaError *qota.Qota // Qota used for errors caused by operational errors.
 )
 
 type state struct {
