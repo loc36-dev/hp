@@ -1,17 +1,21 @@
 package server
 
+import (
+	"gopkg.in/gorilla/mux.v1"
+)
+
 type requestData struct {}
 
 func (d *requestData) Validate () (*validatedRequestData) {
-		// Data retrieval. ...2... {
-	request, okX := mex.Vars ()["locations"]
-	if okX == false || request == "" {
+	// Request data retrieval. ...2... {
+	data, _ := mex.Vars ()["locations"]
+	if data == "" {
 		panic (invErr1)
 	}
 	// ...2... }
 
 	// Data validation. ...2... {
-	locations := strings.Split (request, "_")
+	locations := strings.Split (data, "_")
 	for _, location := range locations {
 		if location == "" {
 			panic (invErr2)
