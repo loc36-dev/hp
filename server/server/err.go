@@ -13,7 +13,7 @@ qotaInv.Grow ()
 invErr1 := err.New ("A location data was omited.", 0, qotaInv.Value ())
 qotaInv.Grow ()
 
-invErr2 := err.New ("No day was specified for location a location.", 0, qotaInv.Value ())
+invErr2 := err.New ("No day was specified for a location.", 0, qotaInv.Value ())
 qotaInv.Grow ()
 
 invErr3 := err.New ("Data of invalid day requested for a location.", 0, qotaInv.Value ())

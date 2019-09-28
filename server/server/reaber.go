@@ -6,9 +6,10 @@ import (
 
 type requestData struct {}
 
-func (d *requestData) Validate () (*validatedRequestData) {
-	// Request data retrieval. ...2... {
-	data, _ := mex.Vars ()["locations"]
+// validate () checks if the request data of the client is valid. If the request data is not valid, the client's request would not be served.
+func (d *requestData) validate () (*validatedRequestData) {
+	// Retrieval of request data. ...2... {
+	data, _ := mux.Vars ()["locations"]
 	if data == "" {
 		panic (invErr1)
 	}
@@ -20,12 +21,15 @@ func (d *requestData) Validate () (*validatedRequestData) {
 		if location == "" {
 			panic (invErr2)
 		}
-		data := strings.Split (location, "-")
-		if len (data) == 1 {
+		locationData := strings.Split (location, "-")
+		if len (locationData) == 1 {
 			panic (invErr3)
 		}
-		for index := 1; index <= len (data) - 1; index ++ {
-			if dayMonthYear.Match (data [index]) == false {
+		if locationData [0] == "" {
+			panic (invErr2)
+		}
+		for index := 1; index <= len (locationData) - 1; index ++ {
+			if dayMonthYear.Match (locationData [index]) == false {
 				panic (invErr4)
 			}
 		}
