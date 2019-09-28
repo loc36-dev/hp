@@ -16,10 +16,24 @@ qotaInv.Grow ()
 invErr2 := err.New ("No day was specified for a location.", 0, qotaInv.Value ())
 qotaInv.Grow ()
 
-invErr3 := err.New ("Data of invalid day requested for a location.", 0, qotaInv.Value ())
+invErr3 := err.New ("Data of an invalid day requested for a location.", 0, qotaInv.Value ())
 qotaInv.Grow ()
 
-invErr4 := err.New ("Data of more than 146 locations may not be requested at a time."), 0, qotaInv.Value ())
+invErr4 := err.New ("Data of more than 32 locations may not be requested at a time."), 0, qotaInv.Value ())
+qotaInv.Grow ()
+
+// Invalid request data Error 5 - 9
+
+invErr5 := err.New ("Request data too long."), 0, qotaInv.Value ())
+qotaInv.Grow ()
+
+invErr6 := err.New ("Data of over 32 locations may not be requested at a tme."), 0, qotaInv.Value ())
+qotaInv.Grow ()
+
+invErr7 := err.New ("Records of over 32 days may not be requested for a location, at a time."), 0, qotaInv.Value ())
+qotaInv.Grow ()
+
+invErr8 := err.New ("The ID of a location was not provided."), 0, qotaInv.Value ())
 qotaInv.Grow ()
 
 // Operational Error 0 - 4

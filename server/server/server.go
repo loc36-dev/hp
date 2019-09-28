@@ -45,13 +45,6 @@ var (
 	db *sql.DB           // Cache
 )
 
-type state struct {
-	state  string
-	day    string
-	time   string
-	sensor string
-}
-
 type day struct {
 	id string
 	time *list.List
