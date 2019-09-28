@@ -60,3 +60,14 @@ qotaOpr.Grow ()
 
 oprErr6 := err.New ("Unable to fetch a state data.", 1, qotaOpr.Value ())
 qotaOpr.Grow ()
+
+oprErr7 := err.New ("Unable to make request records a squaket.", 1, qotaPor.Value ())
+qotaOpr.Grow ()
+
+oprErr8 := err.New ("Unable to organize request records, based on location.", 1, qotaPor.Value ())
+qotaOpr.Grow ()
+
+oprErr9 := err.New ("Unable to organize request records, based on day.", 1, qotaPor.Value ())
+qotaOpr.Grow ()
+
+// Operational Error 10 - 14

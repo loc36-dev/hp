@@ -3,6 +3,7 @@ package server
 import (
 	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
+	"gopkg.in/qamarian-dtp/squaket.v0" // v0.1.1
 	"strings"
 )
 
@@ -157,70 +158,60 @@ func (d *validatedRequestData) fetchRecords () (*requestRecords) {
 		errC := resultSetB.Scan (&someState.state, &someState.day, &someState.time, &someState.sensor)
 		if errC != nil {
 			err_ := err.New (oprErr6.Error (), oprErr6.Class (), oprErr6.Type (), errC)
-			panic (oprErr6)
+			panic (err_)
 		}
 
 		states := append (states, someState)
 	}
 	// ...1... }
+
+	return &requestRecords {states}	
 }
 
 type _state struct {
 	state  string
-	day    string
-	time   string
-	sensor string
+	Day    string
+	Time   string
+	Sensor string
 }
 
-type requestRecords struct {}
+type requestRecords struct {
+	states []_state
+}
 
-func (d *requestRecords) Organize () (result *organizedRequestRecords) {
-	organizeDayRecord := func (someDay []state) (*list.List) {
-		dayResult := list.New ()
-		for _, state := range states {
-			addTimeToDay = func (time state, day *list.List) {
-				for e := day.Front (); e != nil; e = e.Next () {
-					if time.state < e.Value.state {
-						day.InsertBefore (time, e)
-						return
-					}
-				}
-				if e == nil {
-					day.PushFront (list.Element {time})
-				} else {
-					day.InsertAfter (list.Element {time}, e)
-				}
-			}
-			organized := false
-			for e := organizedResult.Front (); e != nil; e = e.Next () {
-				if state.day == e.Value.id {
-					addTimeToDay (state, e)
-					organized = true
-					break
-				}
-			}
-			if organized == true {
-				continue
-			}
-			for e := organizedResult.Front (); e != nil; e = e.Next () {
-				if state.day < e.Value.id {
-					newDay := day {state.day, list.New ()}
-					dayResult.InsertBefore (list.Element {newDay}, e)
-					addTimeToDay (state, newDay.time)
-					break
-				}
-			}
-			if organized == true {
-				continue
-			}
-			newDay := day {state.day, list.New ()}
-			dayResult.PushBack (list.Element {newDay}, e)
-			addTimeToDay (state, newDay.time)
-		}
-		return dayResult
+func (r *requestRecords) Organize () (result *organizedRequestRecords) {
+	// Function definitions. ... {
+	organizeByDay := func () {
 	}
+	// ... }
+
+	records, errX := squaket.New (r.records)
+	if errX != nil {
+		err_ := err.New (oprErr7.Error (), oprErr7.Class (), oprErr7.Type (), errX)
+		panic (err_)
+	}
+
+	sensorsRecords, errY := records.Group ("Sensor")
+	if errY != nil {
+		err_ := err.New (oprErr8.Error (), oprErr8.Class (), oprErr8.Type (), errY)
+		panic (err_)
+	}
+
+	organizedRecords := organizedRequestRecords {
+		map[string] map[string] []_states {}
+	}
+
+	iter := reflect.ValueOf (sensorsRecords).MapRange ()
+	for iter.Next () {
+		sensorRecords := iter.Value ().Interface ().([]interface)
+		organizedSensorRecords := organizeByDay (sensorRecords)
+		sensorID := iter.Key ().Interface ().(string)
+		organizedRecords [sensorID] = organizedSensorRecords
+	}
+
+	return organizedRecords
 }
 
 type organizedRequestRecords struct {
-	records *list.List
+	records map[string] map[string] []_state
 }
