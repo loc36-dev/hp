@@ -67,7 +67,10 @@ qotaOpr.Grow ()
 oprErr8 := err.New ("Unable to organize request records, based on location.", 1, qotaPor.Value ())
 qotaOpr.Grow ()
 
-oprErr9 := err.New ("Unable to organize request records, based on day.", 1, qotaPor.Value ())
+oprErr9 := err.New ("Unable to make records of a sensor a squaket.", 1, qotaPor.Value ())
 qotaOpr.Grow ()
 
 // Operational Error 10 - 14
+
+oprErr10 := err.New ("Unable to organize records of a sensor, based on day.", 1, qotaPor.Value ())
+qotaOpr.Grow ()

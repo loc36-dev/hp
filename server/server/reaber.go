@@ -181,7 +181,35 @@ type requestRecords struct {
 
 func (r *requestRecords) Organize () (result *organizedRequestRecords) {
 	// Function definitions. ... {
-	organizeByDay := func () {
+	organizeByDay := func (sensorRecords []interface) (map[string] []_state) {
+		records, errA := squaket.New (sensorRecords)
+		if errA != nil {
+			err_ := err.New (oprErr9.Error (), oprErr9.Class (), oprErr9.Type (), errA)
+			panic (err_)
+		}
+
+		sensorsRecords, errB := records.Group ("Day")
+		if errB != nil {
+			err_ := err.New (oprErr10.Error (), oprErr10.Class (), oprErr10.Type (), errB)
+			panic (err_)
+		}
+
+		organizedRecords := map[string] []_state {}
+
+		iter := reflect.ValueOf (sensorsRecords).MapRange ()
+		for iter.Next () {
+			dayRecords := iter.Value ().Interface ().([]interface)
+			sensorID := iter.Key ().Interface ().(string)
+
+			stateTypeDayRecords := []_state {}
+			for _, record := range dayRecords {
+				stateTypeDayRecords = append (stateTypeDayRecords, record.(_state))
+			}
+
+			organizedRecords [sensorID] = stateTypeDayRecords
+		}	
+
+		return organizedRecords
 	}
 	// ... }
 
