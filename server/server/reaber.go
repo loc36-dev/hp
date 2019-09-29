@@ -105,7 +105,7 @@ func (d *validatedRequestData) fetchRecords () (*requestRecords) {
 		SELECT id, sensor
 		FROM location
 		WHERE id IN (?
-	` + strings.Repeat (", ?", len (locations) - 1) + ")"
+	` + strings.Repeat (", ?", len (extractLocationIDs (d.data)) - 1) + ")"
 	// ...1... }
 
 	// Retrieving the sensor IDs of all locations. ...1... {
@@ -226,7 +226,7 @@ func (r *requestRecords) Organize () (result *organizedRequestRecords) {
 	}
 
 	organizedRecords := organizedRequestRecords {
-		map[string] map[string] []_state {}
+		map[string] map[string] []_state {},
 	}
 
 	iter := reflect.ValueOf (sensorsRecords).MapRange ()
@@ -243,3 +243,21 @@ func (r *requestRecords) Organize () (result *organizedRequestRecords) {
 type organizedRequestRecords struct {
 	records map[string] map[string] []_state
 }
+
+func (r *organizedRequestRecords) Process () (*processedData) {}
+
+type _locationHistory struct {
+	location string
+	history []_dayHistory
+}
+
+type _dayHistory struct {
+	day string
+	history []_history
+}
+
+type _history struct {
+	state int
+}
+
+type processedData struct {}
