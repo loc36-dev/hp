@@ -169,7 +169,7 @@ func (d *validatedRequestData) fetchRecords () (*requestRecords) {
 }
 
 type _state struct {
-	state  string
+	State  string
 	Day    string
 	Time   string
 	Sensor string
@@ -226,7 +226,7 @@ func (r *requestRecords) Organize () (result *organizedRequestRecords) {
 	}
 
 	organizedRecords := organizedRequestRecords {
-		map[string] map[string] []_states {}
+		map[string] map[string] []_state {}
 	}
 
 	iter := reflect.ValueOf (sensorsRecords).MapRange ()
