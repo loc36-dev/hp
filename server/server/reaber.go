@@ -1,10 +1,12 @@
 package server
 
 import (
+	"database/sql"
 	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
 	"gopkg.in/qamarian-dtp/squaket.v0" // v0.1.1
 	"strings"
+	_ "gopkg.in/go-sql-driver/mysql.v1"
 )
 
 type requestData struct {}

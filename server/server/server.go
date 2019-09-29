@@ -2,14 +2,12 @@ package server
 /*
 import (
 	"container/list"
-	"database/sql"
 	"errors"
 	"fmt"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.1.1
 	"gopkg.in/qamarian-lib/str.v2"
 	"net/http"
 	"strings"
-	_ "gopkg.in/go-sql-driver/mysql.v1"
 )
 */
 
@@ -39,12 +37,12 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 	// ...1... }
 }
 
-/*
 var (
-	dayMonthYear *Regexp // Cache
+	// dayMonthYear *Regexp // Cache
 	db *sql.DB           // Cache
 )
 
+/*
 type day struct {
 	id string
 	time *list.List
