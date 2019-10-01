@@ -1,15 +1,4 @@
 package server
-/*
-import (
-	"container/list"
-	"errors"
-	"fmt"
-	"gopkg.in/qamarian-dtp/err.v0" // v0.1.1
-	"gopkg.in/qamarian-lib/str.v2"
-	"net/http"
-	"strings"
-)
-*/
 
 /*
 func init () {
@@ -32,19 +21,13 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 	validatedData := requestData {}.Validate ()
 	databaseRecords  := validatedData.FetchRecords ()
 	organizedData := databaseRecords.Organize ()
+	requestResponse := organizedData.Process (validatedData)
 
 	// Present organized records. ...1... {
 	// ...1... }
 }
 
 var (
-	// dayMonthYear *Regexp // Cache
+	dayMonthYear *Regexp // Cache
 	db *sql.DB           // Cache
 )
-
-/*
-type day struct {
-	id string
-	time *list.List
-}
-*/

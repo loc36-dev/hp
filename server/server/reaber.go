@@ -5,6 +5,7 @@ import (
 	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
 	"gopkg.in/qamarian-dtp/squaket.v0" // v0.1.1
+	"reflect"
 	"strings"
 	_ "gopkg.in/go-sql-driver/mysql.v1"
 )
@@ -177,6 +178,22 @@ type _state struct {
 	Sensor string
 }
 
+func (s _state) state () (string) {
+	return s.state
+}
+
+func (s _state) day () (string) {
+	return s.state
+}
+
+func (s _state) time () (string) {
+	return s.state
+}
+
+func (s _state) sensor () (string) {
+	return s.state
+}
+
 type requestRecords struct {
 	states []_state
 }
@@ -246,20 +263,69 @@ type organizedRequestRecords struct {
 	records map[string] map[string] []_state
 }
 
-func (r *organizedRequestRecords) Process () (*processedData) {}
+func (r *organizedRequestRecords) Complete () (*completeData) {
+	// Function definitions. ...1... {
+	completeDays := func (days map[string][]_state) (map[string][1440]_pureState) {
+		day := map[string][1440]_pureState {}
 
-type _locationHistory struct {
-	location string
-	history []_dayHistory
+		iter := relect.ValueOf (day).MapRange ()
+		for iter.Next () {
+			dayID := iter.Key ().(string)
+			dayStates := iter.Value ().([]interface {})
+			pureStates := [1440]_pureState {}
+			for index, _ := range pureStates {
+				pureStates [index] = -1
+			}
+			for _, value.time () := range dayStates {
+				if value.time () == "0000" {
+					continue
+				}
+
+				hour, _ := strconv.Atoi (value.time [0:2])
+				min, _ := strconv.Atoi (value.time [2:4])
+				sec := (hour * 60) + min
+
+				secIndex := sec - 1
+
+				if (secIndex - 4) > 0 && pureStates [secIndex - 4] == -1 {
+					pureStates [secIndex - 4] = byte (strconv.Atoi (value.state ()))
+				}
+				if (secIndex - 3) > 0 && pureStates [secIndex - 3] == -1 {
+					pureStates [secIndex - 3] = byte (strconv.Atoi (value.state ()))
+				}
+				if (secIndex - 2) > 0 && pureStates [secIndex - 2] == -1 {
+					pureStates [secIndex - 2] = byte (strconv.Atoi (value.state ()))
+				}
+				if (secIndex - 1) > 0 && pureStates [secIndex - 1] == -1 {
+					pureStates [secIndex - 1] = byte (strconv.Atoi (value.state ()))
+				}
+				pureStates [secIndex] = byte (strconv.Atoi (value.state ()))
+			}
+			day [dayID] = pureStates
+		}
+
+		return day
+	}
+	// ... }
+
+	data := completeData {
+		map[string] map[string] [1440]_pureState {}
+	}
+
+	iter := reflect.ValueOf (r.records).MapRange ()
+	for iter.Next () {
+		sensorID := iter.Key ().(string)
+		sensorData := completeDays (iter.Key ().(map[interface {}] []interface {}))
+		data [sensorID] = sensorData
+	}
+
+	return data
 }
 
-type _dayHistory struct {
-	day string
-	history []_history
+type _pureState byte
+
+type completeData struct {
+	records map[string] map[string] [1440]_pureState
 }
 
-type _history struct {
-	state int
-}
-
-type processedData struct {}
+func (d *completeData) 
