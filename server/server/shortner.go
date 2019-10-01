@@ -265,7 +265,7 @@ type organizedRequestRecords struct {
 
 func (r *organizedRequestRecords) Complete () (*completeData) {
 	// Function definitions. ...1... {
-	completeDays := func (days map[string][]_state) (map[string][1440]_pureState) {
+	completeDays := func (days map[interface {}] []interface {}) (map[string][1440]_pureState) {
 		day := map[string][1440]_pureState {}
 
 		iter := relect.ValueOf (day).MapRange ()
@@ -308,8 +308,8 @@ func (r *organizedRequestRecords) Complete () (*completeData) {
 	}
 	// ... }
 
-	data := completeData {
-		map[string] map[string] [1440]_pureState {}
+	data := &completeData {
+		map[string] map[string] [1440]_pureState {},
 	}
 
 	iter := reflect.ValueOf (r.records).MapRange ()
@@ -328,4 +328,32 @@ type completeData struct {
 	records map[string] map[string] [1440]_pureState
 }
 
-func (d *completeData) 
+func (d *completeData) Format () (*formatedData) {
+	// Function definitions. ...1... {
+	formatDays := func (days map[interface {}] []interface {}) (map[string] []_formattedState) {
+		//
+	}
+	// ...1... }
+
+	data := &formatedData {
+		map[string] map[string] []_formattedState {},
+	}
+
+	iter := reflect.ValueOf (r.records).MapRange ()
+	for iter.Next () {
+		sensorID := iter.Key ().(string)
+		sensorData := formatDays (iter.Key ().(map[interface {}] []interface {}))
+		data [sensorID] = sensorData
+	}
+
+	return data
+}
+
+type _formattedState struct {
+	State int
+	EndTime string
+}
+
+type formatedData struct {
+	records map[string] map[string] []_formattedState
+}
