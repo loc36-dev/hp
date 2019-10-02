@@ -205,17 +205,17 @@ type requestRecords []_state
 
 func (r *requestRecords) organize () (result *organizedRequestRecords) {
 	// Function definitions. .. {
-	organizeByDay := func (sensorRecords []interface) (map[string] []_state) {
+	organizeByDay := func (sensorRecords []interface) (map[string] []_state, error) {
 		records, errA := squaket.New (sensorRecords)
 		if errA != nil {
-			err_ := err.New (oprErr9.Error (), oprErr9.Class (), oprErr9.Type (), errA)
-			panic (err_)
+			errMssg := "Unable to make sensor records a squaket."
+			return nil, err.New (errMssg, 0, 0, errA)
 		}
 
 		sensorsRecords, errB := records.Group ("Day")
 		if errB != nil {
-			err_ := err.New (oprErr10.Error (), oprErr10.Class (), oprErr10.Type (), errB)
-			panic (err_)
+			errMssg := "Unable to group records of the sensor."
+			return nil, err.New (errMssg, 0, 0, errB)
 		}
 
 		organizedRecords := map[string] []_state {}
@@ -249,16 +249,18 @@ func (r *requestRecords) organize () (result *organizedRequestRecords) {
 		panic (err_)
 	}
 
-	organizedRecords := organizedRequestRecords {
-		map[string] map[string] []_state {},
-	}
+	organizedRecords := new_organizedRequestRecords ()
 
 	iter := reflect.ValueOf (sensorsRecords).MapRange ()
 	for iter.Next () {
 		sensorRecords := iter.Value ().Interface ().([]interface)
-		organizedSensorRecords := organizeByDay (sensorRecords)
+		organizedSensorRecords, errQ := organizeByDay (sensorRecords)
+		if errQ != nil {
+			err_ := err.New (oprErr10.Error (), oprErr10.Class (), oprErr10.Type (), errQ)
+			panic (err_)
+		}
 		sensorID := iter.Key ().Interface ().(string)
-		organizedRecords [sensorID] = organizedSensorRecords
+		organizedRecords.add (sensorID, organizedSensorRecords)
 	}
 
 	return organizedRecords
@@ -266,8 +268,14 @@ func (r *requestRecords) organize () (result *organizedRequestRecords) {
 
 // -- Boundary -- //
 
-type organizedRequestRecords struct {
-	records map[string] map[string] []_state
+func new_organizedRequestRecords () (*organizedRequestRecords) {
+	return &map[string] map[string] []_state
+}
+
+type organizedRequestRecords map[string] map[string] []_state
+
+func (r *organizedRequestRecords) addSensorRecords (sensorID string, record map[string] []_state) {
+	r [sensorID] = record
 }
 
 func (r *organizedRequestRecords) complete () (*completeData) {

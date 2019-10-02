@@ -67,7 +67,7 @@ qotaOpr.Grow ()
 oprErr7 := err.New ("Unable to make request records a squaket.", 1, qotaOpr.Value ())
 qotaOpr.Grow ()
 
-oprErr8 := err.New ("Unable to organize request records, based on location.", 1, qotaOpr.Value ())
+oprErr8 := err.New ("Unable to organize request records, based on sensor.", 1, qotaOpr.Value ())
 qotaOpr.Grow ()
 
 oprErr9 := err.New ("Unable to make records of a sensor a squaket.", 1, qotaOpr.Value ())
