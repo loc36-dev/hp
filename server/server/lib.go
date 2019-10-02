@@ -2,7 +2,10 @@ package server
 
 import (
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
+	"strings"
 )
+
+// -- Boundary -- //
 
 func init () {
 	var errX error
@@ -17,6 +20,24 @@ var (
 	dayMonthYear *Regexp // Cache
 	db *sql.DB           // Cache
 )
+
+// -- Boundary -- //
+
+func locationsIDs (r *http.Request) ([]string) {
+	output := []string {}
+
+	data, _ := mux.Vars (r)["locations"]
+	locationsData := strings.Split (data, "_")
+
+	for _, locationData := range locationsData {
+		segments := strings.Split (locationData, "-")
+		data = append (data, segments [0])
+	}
+
+	return output
+}
+
+// -- Boundary -- //
 
 func locationsSensors (locations []strings) (_locationsSensors, error) {
 	query := `SELECT id, sensor
@@ -63,3 +84,6 @@ func (l *_locationsSensors) add (location, sensor string) {
 func (l *_locationsSensors) sensor (location string) (string, bool) {
 	return l [location]
 }
+
+// -- Boundary -- //
+

@@ -169,13 +169,14 @@ func (d *_requestData) validate (r *http.Request) (*validatedRequestData) {
 	// ...1... }
 
 	// Validating existence of all locations. ...1... {
-
+	_, errX := locationsSensors (locationsIDs (r))
+	if errX != nil {
 	// ...1... }
 
 	return validatedRequestData {data}
 }
 
-// --- //
+// -- Boundary -- //
 
 type requestRecords struct {
 	states []_state
@@ -242,7 +243,7 @@ func (r *requestRecords) Organize () (result *organizedRequestRecords) {
 	return organizedRecords
 }
 
-// --- //
+// -- Boundary -- //
 
 type organizedRequestRecords struct {
 	records map[string] map[string] []_state
@@ -313,7 +314,7 @@ func (s *_pureState) state () (byte) {
 	return byte (s)
 }
 
-// --- //
+// -- Boundary -- //
 
 type completeData struct {
 	records map[string] map[string] [1440]_pureState
@@ -384,7 +385,7 @@ func (s *_formattedState) endTime () (string) {
 	return r.EndTime
 }
 
-// --- //
+// -- Boundary -- //
 
 type formatedData struct {
 	records map[string] map[string] []_formattedState
