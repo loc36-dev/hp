@@ -1,6 +1,7 @@
 package server
 
 import (
+	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
 	"strings"
 )
@@ -23,7 +24,7 @@ var (
 
 // -- Boundary -- //
 
-func locationsIDs (r *http.Request) ([]string) {
+func extractLocationIDs (r *http.Request) ([]string) {
 	output := []string {}
 
 	data, _ := mux.Vars (r)["locations"]
@@ -86,4 +87,3 @@ func (l *_locationsSensors) sensor (location string) (string, bool) {
 }
 
 // -- Boundary -- //
-

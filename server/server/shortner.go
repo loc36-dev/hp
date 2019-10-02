@@ -20,34 +20,25 @@ type requestData string
 
 // fetchRecords () fetches all location state records matching the request of the user.
 func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
-	// Function definitions. ..1.. {
-	extractLocationIDs := func (requestData string) ([]string) {
-		ids := []string {}
-		locations := strings.Split (requestData, "_")
-		for _, locationData := range locations {
-			data := strings.Split (locationData, "-")
-			ids = append (ids, data [0])
-		}
-		return ids
-	}
-	// ..1.. }
-
-	d, errX := new__requestData (r).validate ()
+	// Request data validation and retrieval. ..1.. {
+	var errX error
+	d, errX = new__requestData (r).validate ()
 	if errX != nil {
 		err_ := err.New (oprErr9.Error (), oprErr9.Class (), oprErr9.Type (), errX)
 		panic (err_)
 	}
+	// ..1.. }
 
 	// Constructing query required to retrieve the sensor IDs of all locations. ..1.. {
 	queryB := `
-		SELECT id, sensor
+		SELECT sensor
 		FROM location
 		WHERE id IN (?
-	` + strings.Repeat (", ?", len (extractLocationIDs (string (d))) - 1) + ")"
+	` + strings.Repeat (", ?", len (extractLocationIDs (r)) - 1) + ")"
 	// ..1.. }
 
 	// Retrieving the sensor IDs of all locations. ..1.. {
-	resultSet, errZ := db.Query (query, extractLocationIDs (string (d))..)
+	resultSet, errZ := db.Query (query, extractLocationIDs (r)...)
 	if errZ != nil {
 		err_ := err.New (oprErr3.Error (), oprErr3.Class (), oprErr3.Type (), errZ)
 		panic (err_)
@@ -57,11 +48,10 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 
 	for resultSet.Next () {
 		var (
-			locationID string
 			sensorID string
 		)
 
-		errA := resultSet.Scan (&locationID, &sensorID)
+		errA := resultSet.Scan (&sensorID)
 		if errA != nil {
 			err_ := err.New (oprErr4.Error (), oprErr4.Class (), oprErr4.Type (), errA)
 			panic (err_)
@@ -80,30 +70,36 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 	// ..1.. }
 
 	// Retrieving the states of all locations. ..1.. {
-	var (
-		states []_state
-	)
-
 	resultSetB, errB := db.Query (queryC, sensors..)
 	if errB != nil {
 		err_ := err.New (oprErr5.Error (), oprErr5.Class (), oprErr5.Type (), errB)
 		panic (err_)
 	}
 
-	for resultSetB.Next () {
-		someState := state {}
+	var (
+		states []*_state
+		state string
+		day
+		time
+		sensor
+	)
 
-		errC := resultSetB.Scan (&someState.state, &someState.day, &someState.time, &someState.sensor)
+	for resultSetB.Next () {
+		errC := resultSetB.Scan (&state, &day, &time, &sensor)
 		if errC != nil {
 			err_ := err.New (oprErr6.Error (), oprErr6.Class (), oprErr6.Type (), errC)
 			panic (err_)
 		}
 
-		states := append (states, someState)
+		states := append (states, new__state (state, day, time, sensor))
 	}
 	// ..1.. }
 
 	return &requestRecords {states}	
+}
+
+func new__state (state, day, time, sensor string) (*_state) {
+	return &_state {state, day, time, sensor}
 }
 
 type _state struct {
@@ -113,19 +109,19 @@ type _state struct {
 	Sensor string
 }
 
-func (s _state) state () (string) {
+func (s *_state) state () (string) {
 	return s.state
 }
 
-func (s _state) day () (string) {
+func (s *_state) day () (string) {
 	return s.state
 }
 
-func (s _state) time () (string) {
+func (s *_state) time () (string) {
 	return s.state
 }
 
-func (s _state) sensor () (string) {
+func (s *_state) sensor () (string) {
 	return s.state
 }
 
@@ -178,13 +174,13 @@ func (d *_requestData) validate () (*requestData) {
 	// ..1.. }
 
 	// Validating existence of all locations. ..1.. {
-	sensors, errX := locationsSensors (locationsIDs (r))
+	sensors, errX := locationsSensors (extractLocationIDs (r))
 	if errX != nil {
 		err_ := err.New (oprErr1.Error (), oprErr1.Class (), oprErr1.Type (), errX)
 		panic (err_)
 	}
 
-	ids := locationsIDs (r)
+	ids := extractLocationIDs (r)
 
 	for _, id := range ids {
 		_, okX := sensors [id]
@@ -204,7 +200,7 @@ type requestRecords struct {
 	states []_state
 }
 
-func (r *requestRecords) Organize () (result *organizedRequestRecords) {
+func (r *requestRecords) organize () (result *organizedRequestRecords) {
 	// Function definitions. .. {
 	organizeByDay := func (sensorRecords []interface) (map[string] []_state) {
 		records, errA := squaket.New (sensorRecords)
@@ -271,7 +267,7 @@ type organizedRequestRecords struct {
 	records map[string] map[string] []_state
 }
 
-func (r *organizedRequestRecords) Complete () (*completeData) {
+func (r *organizedRequestRecords) complete () (*completeData) {
 	// Function definitions. ..1.. {
 	completeDays := func (days map[interface {}] []interface {}) (map[string][1440]_pureState) {
 		day := map[string][1440]_pureState {}
