@@ -10,9 +10,9 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 	}
 	// ...1... }
 
-	databaseRecords  := validatedData.FetchRecords ()
-	organizedData := databaseRecords.Organize ()
-	requestResponse := organizedData.Complete ()
+	databaseRecords  := validatedData.fetchRecords (r)
+	organizedData := databaseRecords.organize ()
+	requestResponse := organizedData.complete ()
 
 	// Present organized records. ...1... {
 	// ...1... }

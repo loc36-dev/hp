@@ -16,7 +16,7 @@ type validatedRequestData struct {
 }
 
 // fetchRecords () fetches all location state records matching the request of the user.
-func (d *validatedRequestData) fetchRecords () (*requestRecords) {
+func (d *validatedRequestData) fetchRecords (r *http.Request) (*requestRecords) {
 	// Function definitions. ...1... {
 	extractLocationIDs := func (requestData string) ([]string) {
 		ids := []string {}
@@ -29,7 +29,7 @@ func (d *validatedRequestData) fetchRecords () (*requestRecords) {
 	}
 	// ...1... }
 
-	d.data := _requestData {}.validate ()
+	d.data := _requestData {}.validate (r)
 
 	// Constructing query required to retrieve the sensor IDs of all locations. ...1... {
 	queryB := `
@@ -125,12 +125,12 @@ func (s _state) sensor () (string) {
 type _requestData struct {}
 
 // validate () checks if the request data of the client is valid. If the request data is not valid, the client's request would not be served.
-func (d *_requestData) validate () (*validatedRequestData) {
-	// Retrieval of request data. ...2... {
-	data, _ := mux.Vars ()["locations"]
-	// ...2... }
+func (d *_requestData) validate (r *http.Request) (*validatedRequestData) {
+	// Retrieval of request data. ...1... {
+	data, _ := mux.Vars (r)["locations"]
+	// ...1... }
 
-	// Checking if request data was properly formatted. ...2... {
+	// Checking if request data was properly formatted. ...1... {
 	if data == "" {
 		panic (invErr0)
 	} else if len (data) > 1024 {
@@ -166,33 +166,11 @@ func (d *_requestData) validate () (*validatedRequestData) {
 			}
 		}
 	}
-	// ...2... }
+	// ...1... }
 
-	// Validating existence of all locations. ...2... {
-	// Constructing query required for validation. ...3... { ...
-	query := `
-		SELECT COUNT (id)
-		FROM location
-		WHERE id IN (?` + strings.Repeat (", ?", len (locations) - 1) + ")"
-	// ...3... }
+	// Validating existence of all locations. ...1... {
 
-	errX := db.Ping ()
-	if errX != nil {
-		err_ := err.New (oprErr0.Error (), oprErr0.Class (), oprErr0.Type (), errX)
-		panic (err_)
-	}
-
-	var noOfValidLocations int
-	errY := db.QueryRow (query, locations [1:] ...).Scan (&noOfValidLocations)
-	if errY != nil {
-		err_ := err.New (oprErr1.Error (), oprErr1.Class (), oprErr1.Type (), errY)
-		panic (errr_)
-	}
-
-	if noOfValidLocations != len (locations) {
-		panic (oprErr2)
-	}
-	// ...2... }
+	// ...1... }
 
 	return validatedRequestData {data}
 }
@@ -264,6 +242,8 @@ func (r *requestRecords) Organize () (result *organizedRequestRecords) {
 	return organizedRecords
 }
 
+// --- //
+
 type organizedRequestRecords struct {
 	records map[string] map[string] []_state
 }
@@ -333,6 +313,8 @@ func (s *_pureState) state () (byte) {
 	return byte (s)
 }
 
+// --- //
+
 type completeData struct {
 	records map[string] map[string] [1440]_pureState
 }
@@ -401,6 +383,8 @@ func (s *_formattedState) state () (int) {
 func (s *_formattedState) endTime () (string) {
 	return r.EndTime
 }
+
+// --- //
 
 type formatedData struct {
 	records map[string] map[string] []_formattedState
