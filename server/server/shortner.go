@@ -11,13 +11,16 @@ import (
 	_ "gopkg.in/go-sql-driver/mysql.v1"
 )
 
-type validatedRequestData struct {
-	data string
+func new_requestData (request string) (*requestData) {
+	var data requestData = request
+	return request
 }
 
+type requestData string
+
 // fetchRecords () fetches all location state records matching the request of the user.
-func (d *validatedRequestData) fetchRecords (r *http.Request) (*requestRecords) {
-	// Function definitions. ...1... {
+func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
+	// Function definitions. ..1.. {
 	extractLocationIDs := func (requestData string) ([]string) {
 		ids := []string {}
 		locations := strings.Split (requestData, "_")
@@ -27,20 +30,24 @@ func (d *validatedRequestData) fetchRecords (r *http.Request) (*requestRecords) 
 		}
 		return ids
 	}
-	// ...1... }
+	// ..1.. }
 
-	d.data := _requestData {}.validate (r)
+	d, errX := new__requestData (r).validate ()
+	if errX != nil {
+		err_ := err.New (oprErr9.Error (), oprErr9.Class (), oprErr9.Type (), errX)
+		panic (err_)
+	}
 
-	// Constructing query required to retrieve the sensor IDs of all locations. ...1... {
+	// Constructing query required to retrieve the sensor IDs of all locations. ..1.. {
 	queryB := `
 		SELECT id, sensor
 		FROM location
 		WHERE id IN (?
-	` + strings.Repeat (", ?", len (extractLocationIDs (d.data)) - 1) + ")"
-	// ...1... }
+	` + strings.Repeat (", ?", len (extractLocationIDs (string (d))) - 1) + ")"
+	// ..1.. }
 
-	// Retrieving the sensor IDs of all locations. ...1... {
-	resultSet, errZ := db.Query (query, extractLocationIDs (d.data)...)
+	// Retrieving the sensor IDs of all locations. ..1.. {
+	resultSet, errZ := db.Query (query, extractLocationIDs (string (d))..)
 	if errZ != nil {
 		err_ := err.New (oprErr3.Error (), oprErr3.Class (), oprErr3.Type (), errZ)
 		panic (err_)
@@ -62,22 +69,22 @@ func (d *validatedRequestData) fetchRecords (r *http.Request) (*requestRecords) 
 
 		sensors = append (sensors, sensorID)
 	}
-	// ...1... }
+	// ..1.. }
 
-	// Constructing query required to retrieve states from the database. ...1... {
+	// Constructing query required to retrieve states from the database. ..1.. {
 	queryC := `
 		SELECT UNIQUE state, day, time, sensor
 		FROM state
 		WHERE sensor IN (?
 	` + strings.Repeat (", ?", len (sensors) - 1) + ")"
-	// ...1... }
+	// ..1.. }
 
-	// Retrieving the states of all locations. ...1... {
+	// Retrieving the states of all locations. ..1.. {
 	var (
 		states []_state
 	)
 
-	resultSetB, errB := db.Query (queryC, sensors...)
+	resultSetB, errB := db.Query (queryC, sensors..)
 	if errB != nil {
 		err_ := err.New (oprErr5.Error (), oprErr5.Class (), oprErr5.Type (), errB)
 		panic (err_)
@@ -94,7 +101,7 @@ func (d *validatedRequestData) fetchRecords (r *http.Request) (*requestRecords) 
 
 		states := append (states, someState)
 	}
-	// ...1... }
+	// ..1.. }
 
 	return &requestRecords {states}	
 }
@@ -122,22 +129,24 @@ func (s _state) sensor () (string) {
 	return s.state
 }
 
-type _requestData struct {}
+func new__requestData (r *http.Request) (*_requestData, error) {
+	var requestData _requestData
+	requestData, _ := mux.Vars (r)["locations"]
+	return &requestData, nil
+}
+
+type _requestData string
 
 // validate () checks if the request data of the client is valid. If the request data is not valid, the client's request would not be served.
-func (d *_requestData) validate (r *http.Request) (*validatedRequestData) {
-	// Retrieval of request data. ...1... {
-	data, _ := mux.Vars (r)["locations"]
-	// ...1... }
-
-	// Checking if request data was properly formatted. ...1... {
-	if data == "" {
+func (d *_requestData) validate () (*requestData) {
+	// Checking if request data was properly formatted. ..1.. {
+	if d == "" {
 		panic (invErr0)
-	} else if len (data) > 1024 {
+	} else if len (d) > 1024 {
 		panic (invErr5)
 	}
 
-	locations := strings.Split (data, "_")
+	locations := strings.Split (d, "_")
 	if len (locations) > 32 {
 		panic (invErr6)
 	}
@@ -166,14 +175,27 @@ func (d *_requestData) validate (r *http.Request) (*validatedRequestData) {
 			}
 		}
 	}
-	// ...1... }
+	// ..1.. }
 
-	// Validating existence of all locations. ...1... {
-	_, errX := locationsSensors (locationsIDs (r))
+	// Validating existence of all locations. ..1.. {
+	sensors, errX := locationsSensors (locationsIDs (r))
 	if errX != nil {
-	// ...1... }
+		err_ := err.New (oprErr1.Error (), oprErr1.Class (), oprErr1.Type (), errX)
+		panic (err_)
+	}
 
-	return validatedRequestData {data}
+	ids := locationsIDs (r)
+
+	for _, id := range ids {
+		_, okX := sensors [id]
+		if okX == false {
+			err_ := err.New (oprErr2.Error (), oprErr2.Class (), oprErr2.Type ())
+			panic (err_)
+		}
+	}
+	// ..1.. }
+
+	return new_requestData (data)
 }
 
 // -- Boundary -- //
@@ -183,7 +205,7 @@ type requestRecords struct {
 }
 
 func (r *requestRecords) Organize () (result *organizedRequestRecords) {
-	// Function definitions. ... {
+	// Function definitions. .. {
 	organizeByDay := func (sensorRecords []interface) (map[string] []_state) {
 		records, errA := squaket.New (sensorRecords)
 		if errA != nil {
@@ -214,7 +236,7 @@ func (r *requestRecords) Organize () (result *organizedRequestRecords) {
 
 		return organizedRecords
 	}
-	// ... }
+	// .. }
 
 	records, errX := squaket.New (r.records)
 	if errX != nil {
@@ -250,7 +272,7 @@ type organizedRequestRecords struct {
 }
 
 func (r *organizedRequestRecords) Complete () (*completeData) {
-	// Function definitions. ...1... {
+	// Function definitions. ..1.. {
 	completeDays := func (days map[interface {}] []interface {}) (map[string][1440]_pureState) {
 		day := map[string][1440]_pureState {}
 
@@ -292,7 +314,7 @@ func (r *organizedRequestRecords) Complete () (*completeData) {
 
 		return day
 	}
-	// ... }
+	// .. }
 
 	data := &completeData {
 		map[string] map[string] [1440]_pureState {},
@@ -321,7 +343,7 @@ type completeData struct {
 }
 
 func (d *completeData) Format () (*formatedData) {
-	// Function definitions. ...1... {
+	// Function definitions. ..1.. {
 	formatDays := func (days map[interface {}] []interface {}) (map[string] []_formattedState) {
 		formattedDays := map[string] []_formattedState {}
 
@@ -356,7 +378,7 @@ func (d *completeData) Format () (*formatedData) {
 
 		return formattedDays
 	}
-	// ...1... }
+	// ..1.. }
 
 	data := &formatedData {
 		map[string] map[string] []_formattedState {},

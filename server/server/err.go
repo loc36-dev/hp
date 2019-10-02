@@ -36,6 +36,9 @@ qotaInv.Grow ()
 invErr8 := err.New ("The ID of a location was not provided."), 0, qotaInv.Value ())
 qotaInv.Grow ()
 
+invErr9 := err.New ("Request data validation failed."), 0, qotaInv.Value ())
+qotaInv.Grow ()
+
 // Operational Error 0 - 4
 
 oprErr0 := err.New ("Database unreachable.", 1, qotaOpr.Value ())
@@ -61,16 +64,16 @@ qotaOpr.Grow ()
 oprErr6 := err.New ("Unable to fetch a state data.", 1, qotaOpr.Value ())
 qotaOpr.Grow ()
 
-oprErr7 := err.New ("Unable to make request records a squaket.", 1, qotaPor.Value ())
+oprErr7 := err.New ("Unable to make request records a squaket.", 1, qotaOpr.Value ())
 qotaOpr.Grow ()
 
-oprErr8 := err.New ("Unable to organize request records, based on location.", 1, qotaPor.Value ())
+oprErr8 := err.New ("Unable to organize request records, based on location.", 1, qotaOpr.Value ())
 qotaOpr.Grow ()
 
-oprErr9 := err.New ("Unable to make records of a sensor a squaket.", 1, qotaPor.Value ())
+oprErr9 := err.New ("Unable to make records of a sensor a squaket.", 1, qotaOpr.Value ())
 qotaOpr.Grow ()
 
 // Operational Error 10 - 14
 
-oprErr10 := err.New ("Unable to organize records of a sensor, based on day.", 1, qotaPor.Value ())
+oprErr10 := err.New ("Unable to organize records of a sensor, based on day.", 1, qotaOpr.Value ())
 qotaOpr.Grow ()
