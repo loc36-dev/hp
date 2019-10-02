@@ -5,85 +5,11 @@ import (
 	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
 	"gopkg.in/qamarian-dtp/squaket.v0" // v0.1.1
+	"gopkg.in/qamarian-lib/str.v2"
 	"reflect"
 	"strings"
 	_ "gopkg.in/go-sql-driver/mysql.v1"
 )
-
-type requestData struct {}
-
-// validate () checks if the request data of the client is valid. If the request data is not valid, the client's request would not be served.
-func (d *requestData) validate () (*validatedRequestData) {
-	// Retrieval of request data. ...2... {
-	data, _ := mux.Vars ()["locations"]
-	// ...2... }
-
-	// Checking if request data was properly formatted. ...2... {
-	if data == "" {
-		panic (invErr0)
-	} else if len (data) > 1024 {
-		panic (invErr5)
-	}
-
-	locations := strings.Split (data, "_")
-	if len (locations) > 32 {
-		panic (invErr6)
-	}
-
-	for _, location := range locations {
-		if location == "" {
-			panic (invErr1)
-		}
-		locationData := strings.Split (location, "-")
-
-		if len (locationData) == 1 {
-			panic (invErr2)
-		}
-
-		if locationData [0] == "" {
-			panic (invErr8)
-		}
-
-		if len (locationData) > 33 {
-			panic (invErr7)
-		}
-
-		for index := 1; index <= len (locationData) - 1; index ++ {
-			if dayMonthYear.Match (locationData [index]) == false {
-				panic (invErr3)
-			}
-		}
-	}
-	// ...2... }
-
-	// Validating existence of all locations. ...2... {
-	// Constructing query required for validation. ...3... { ...
-	query := `
-		SELECT COUNT (id)
-		FROM location
-		WHERE id IN (?` + strings.Repeat (", ?", len (locations) - 1) + ")"
-	// ...3... }
-
-	errX := db.Ping ()
-	if errX != nil {
-		err_ := err.New (oprErr0.Error (), oprErr0.Class (), oprErr0.Type (), errX)
-		panic (err_)
-	}
-
-	var noOfValidLocations int
-	errY := db.QueryRow (query, locations [1:] ...).Scan (&noOfValidLocations)
-	if errY != nil {
-		err_ := err.New (oprErr1.Error (), oprErr1.Class (), oprErr1.Type (), errY)
-		panic (errr_)
-	}
-
-	if noOfValidLocations != len (locations) {
-		panic (oprErr2)
-	}
-	// ...2... }
-
-	return validatedRequestData {data}
-}
 
 type validatedRequestData struct {
 	data string
@@ -102,6 +28,8 @@ func (d *validatedRequestData) fetchRecords () (*requestRecords) {
 		return ids
 	}
 	// ...1... }
+
+	d.data := _requestData {}.validate ()
 
 	// Constructing query required to retrieve the sensor IDs of all locations. ...1... {
 	queryB := `
@@ -193,6 +121,83 @@ func (s _state) time () (string) {
 func (s _state) sensor () (string) {
 	return s.state
 }
+
+type _requestData struct {}
+
+// validate () checks if the request data of the client is valid. If the request data is not valid, the client's request would not be served.
+func (d *_requestData) validate () (*validatedRequestData) {
+	// Retrieval of request data. ...2... {
+	data, _ := mux.Vars ()["locations"]
+	// ...2... }
+
+	// Checking if request data was properly formatted. ...2... {
+	if data == "" {
+		panic (invErr0)
+	} else if len (data) > 1024 {
+		panic (invErr5)
+	}
+
+	locations := strings.Split (data, "_")
+	if len (locations) > 32 {
+		panic (invErr6)
+	}
+
+	for _, location := range locations {
+		if location == "" {
+			panic (invErr1)
+		}
+		locationData := strings.Split (location, "-")
+
+		if len (locationData) == 1 {
+			panic (invErr2)
+		}
+
+		if locationData [0] == "" {
+			panic (invErr8)
+		}
+
+		if len (locationData) > 33 {
+			panic (invErr7)
+		}
+
+		for index := 1; index <= len (locationData) - 1; index ++ {
+			if dayMonthYear.Match (locationData [index]) == false {
+				panic (invErr3)
+			}
+		}
+	}
+	// ...2... }
+
+	// Validating existence of all locations. ...2... {
+	// Constructing query required for validation. ...3... { ...
+	query := `
+		SELECT COUNT (id)
+		FROM location
+		WHERE id IN (?` + strings.Repeat (", ?", len (locations) - 1) + ")"
+	// ...3... }
+
+	errX := db.Ping ()
+	if errX != nil {
+		err_ := err.New (oprErr0.Error (), oprErr0.Class (), oprErr0.Type (), errX)
+		panic (err_)
+	}
+
+	var noOfValidLocations int
+	errY := db.QueryRow (query, locations [1:] ...).Scan (&noOfValidLocations)
+	if errY != nil {
+		err_ := err.New (oprErr1.Error (), oprErr1.Class (), oprErr1.Type (), errY)
+		panic (errr_)
+	}
+
+	if noOfValidLocations != len (locations) {
+		panic (oprErr2)
+	}
+	// ...2... }
+
+	return validatedRequestData {data}
+}
+
+// --- //
 
 type requestRecords struct {
 	states []_state
@@ -324,6 +329,10 @@ func (r *organizedRequestRecords) Complete () (*completeData) {
 
 type _pureState byte
 
+func (s *_pureState) state () (byte) {
+	return byte (s)
+}
+
 type completeData struct {
 	records map[string] map[string] [1440]_pureState
 }
@@ -331,7 +340,38 @@ type completeData struct {
 func (d *completeData) Format () (*formatedData) {
 	// Function definitions. ...1... {
 	formatDays := func (days map[interface {}] []interface {}) (map[string] []_formattedState) {
-		//
+		formattedDays := map[string] []_formattedState {}
+
+		iter := reflect.ValueOf (days).MapRange ()
+		for iter.Next () {
+			dayID := iter.Key.(string)
+			dayStates := iter.Value.([]interface {})
+
+			formattedStates := []_formattedState {}
+
+			currentState := dayStates [0].(_pureState)
+
+			for index, value := range dayStates {
+				if currentState != value.(_pureState) {
+					currentState = value.(_pureState)
+					min :=  (index + 1) % 60
+					hour := int (((index + 1) - min) / 60)
+					time := fmt.Sprintf ("%s%s", str.PrependTillN (strconv.Itoa (hour), "0", 2),
+						str.PrependTillN (strconv.Itoa (min), "0", 2))
+					someState := _formattedState {value.(_pureState), time}
+					formattedStates = append (formattedStates, someState)
+				}
+			}
+
+			if formattedStates [len (formattedStates) - 1].endTime () != "2400" {
+				someState := _formattedState {formattedStates [len (formattedStates) - 1].state (), "2400"}
+				formattedStates = append (formattedStates, someState)
+			}
+
+			formattedDays [dayID] = formattedStates
+		}
+
+		return formattedDays
 	}
 	// ...1... }
 
@@ -352,6 +392,14 @@ func (d *completeData) Format () (*formatedData) {
 type _formattedState struct {
 	State int
 	EndTime string
+}
+
+func (s *_formattedState) state () (int) {
+	return r.State
+}
+
+func (s *_formattedState) endTime () (string) {
+	return r.EndTime
 }
 
 type formatedData struct {
