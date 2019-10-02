@@ -95,7 +95,7 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 	}
 	// ..1.. }
 
-	return &requestRecords {states}	
+	return new_requestRecords (states)
 }
 
 func new__state (state, day, time, sensor string) (*_state) {
@@ -196,9 +196,12 @@ func (d *_requestData) validate () (*requestData) {
 
 // -- Boundary -- //
 
-type requestRecords struct {
-	states []_state
+func new_requestRecords (records []_state) (*requestRecords) {
+	var output requestRecords = records
+	return &output
 }
+
+type requestRecords []_state
 
 func (r *requestRecords) organize () (result *organizedRequestRecords) {
 	// Function definitions. .. {
@@ -234,7 +237,7 @@ func (r *requestRecords) organize () (result *organizedRequestRecords) {
 	}
 	// .. }
 
-	records, errX := squaket.New (r.records)
+	records, errX := squaket.New (r)
 	if errX != nil {
 		err_ := err.New (oprErr7.Error (), oprErr7.Class (), oprErr7.Type (), errX)
 		panic (err_)
