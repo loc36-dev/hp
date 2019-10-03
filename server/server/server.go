@@ -9,7 +9,9 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 
 	databaseRecords := new_requestData (r).fetchRecords (r)
 	organizedData := databaseRecords.organize ()
-	requestResponse := organizedData.complete ()
+	completeData := organizedData.complete ()
+	formattedData := completeData.format ()
+
 
 	// Present organized records. ...1... {
 	// ...1... }

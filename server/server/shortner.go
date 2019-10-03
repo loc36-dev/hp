@@ -287,34 +287,36 @@ func (r *organizedRequestRecords) complete () (*completeData) {
 		for iter.Next () {
 			dayID := iter.Key ().(string)
 			dayStates := iter.Value ().([]interface {})
+
 			pureStates := [1440]_pureState {}
 			for index, _ := range pureStates {
 				pureStates [index] = -1
 			}
-			for _, value.time () := range dayStates {
-				if value.time () == "0000" {
+
+			for _, value := range dayStates {
+				if value.(_state).time () == "0000" {
 					continue
 				}
 
-				hour, _ := strconv.Atoi (value.time [0:2])
-				min, _ := strconv.Atoi (value.time [2:4])
+				hour, _ := strconv.Atoi (value.(_state).time [0:2])
+				min, _ := strconv.Atoi (value.(_state).time [2:4])
 				sec := (hour * 60) + min
 
 				secIndex := sec - 1
 
 				if (secIndex - 4) > 0 && pureStates [secIndex - 4] == -1 {
-					pureStates [secIndex - 4] = byte (strconv.Atoi (value.state ()))
+					pureStates [secIndex - 4] = byte (strconv.Atoi (value.(_state).state ()))
 				}
 				if (secIndex - 3) > 0 && pureStates [secIndex - 3] == -1 {
-					pureStates [secIndex - 3] = byte (strconv.Atoi (value.state ()))
+					pureStates [secIndex - 3] = byte (strconv.Atoi (value.(_state).state ()))
 				}
 				if (secIndex - 2) > 0 && pureStates [secIndex - 2] == -1 {
-					pureStates [secIndex - 2] = byte (strconv.Atoi (value.state ()))
+					pureStates [secIndex - 2] = byte (strconv.Atoi (value.(_state),state ()))
 				}
 				if (secIndex - 1) > 0 && pureStates [secIndex - 1] == -1 {
-					pureStates [secIndex - 1] = byte (strconv.Atoi (value.state ()))
+					pureStates [secIndex - 1] = byte (strconv.Atoi (value.(_state).state ()))
 				}
-				pureStates [secIndex] = byte (strconv.Atoi (value.state ()))
+				pureStates [secIndex] = byte (strconv.Atoi (value.(_state).state ()))
 			}
 			day [dayID] = pureStates
 		}
@@ -323,18 +325,22 @@ func (r *organizedRequestRecords) complete () (*completeData) {
 	}
 	// .. }
 
-	data := &completeData {
-		map[string] map[string] [1440]_pureState {},
-	}
-
-	iter := reflect.ValueOf (r.records).MapRange ()
+	data := new_completeData ()
+		
+	iter := reflect.ValueOf (r).MapRange ()
 	for iter.Next () {
 		sensorID := iter.Key ().(string)
-		sensorData := completeDays (iter.Key ().(map[interface {}] []interface {}))
-		data [sensorID] = sensorData
+		sensorData := completeDays (iter.Value ().(map[interface {}] []interface {}))
+		data.add (sensorID, sensorData)
 	}
 
 	return data
+}
+
+func new__pureState (state byte) (*_pureState) {
+	var pureState _pureState
+	pureState = state
+	return &pureState
 }
 
 type _pureState byte
@@ -345,11 +351,17 @@ func (s *_pureState) state () (byte) {
 
 // -- Boundary -- //
 
-type completeData struct {
-	records map[string] map[string] [1440]_pureState
+func new_completeData () (*completeData) {
+	return &map[string] map[string] [1440]*_pureState {}
 }
 
-func (d *completeData) Format () (*formatedData) {
+type completeData map[string] map[string] [1440]*_pureState
+
+func (d *completeData) add (sensorID string, data map[string] [1440]*_pureState) {
+	d [sensorID] = data
+}
+
+func (d *completeData) format () (*formatedData) {
 	// Function definitions. ..1.. {
 	formatDays := func (days map[interface {}] []interface {}) (map[string] []_formattedState) {
 		formattedDays := map[string] []_formattedState {}
