@@ -2,6 +2,7 @@ package server
 
 import (
 	"database/sql"
+	"encoding/json"
 	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
 	"gopkg.in/qamarian-dtp/squaket.v0" // v0.1.1
@@ -395,7 +396,7 @@ func (d *completeData) format () (*formatedData) {
 	for iter.Next () {
 		sensorID := iter.Key ().(string)
 		sensorData := formatDays (iter.Key ().(map[interface {}] []interface {}))
-		data.addDay (sensorID, sensorData)
+		data.addSensor (sensorID, sensorData)
 	}
 
 	return data
@@ -419,10 +420,28 @@ func new_formattedData () (*formattedData) {
 	return &map[string] map[string] []_formattedState
 }
 
-type formattedData records map[string] map[string] []_formattedState
+type formattedData map[string] map[string] []_formattedState
 
-func (d *formattedData) addDay (day string, record map[string] []_formattedState) {
-	d [day] = record
+func (d *formattedData) addSensor (sensorID string, record map[string] []_formattedState) {
+	d [sensorID] = record
+}
+
+func (d *formattedData) marshal () (output *marshalledData) {
+	iter := reflect.ValueOf (d).MapRange ()
+	output = new_marshalledData ()
+
+	for iter.Next () {
+		sensorID := iter.Key ().(string)
+		sensorData := iter.Key ().(map[interface {}] []interface {})
+		data, errX := json.Marshal (sensorData)
+		if errX != nil {
+			err_ := err.New (oprErr11.Error (), oprErr11.Class (), oprErr11.Type (), errX)
+			panic (err_)
+		}
+		output.addSensorData (sensorID, string (data))
+	}
+
+	return output
 }
 
 func new__formattedState (state int, endTime string) (*_formattedState) {}
@@ -438,4 +457,21 @@ func (s *_formattedState) state () (int) {
 
 func (s *_formattedState) endTime () (string) {
 	return r.EndTime
+}
+
+// -- Boundary -- //
+
+func new_marshalledData () (*marshalledData) {
+	var output marshalledData
+	return &output
+}
+
+type marshalledData map[string]string
+
+func (d *marshalledData) addSensorData (sensorID, data string) {
+	d [sensorID] = data
+}
+
+func (d *marshalledData) getSensorData (sensorID string) (string, bool) {
+	return d [sensorID]
 }

@@ -82,7 +82,7 @@ func (l *_locationsSensors) add (location, sensor string) {
 	l [location] = sensor
 }
 
-func (l *_locationsSensors) sensor (location string) (string, bool) {
+func (l *_locationsSensors) getLocationSensor (location string) (string, bool) {
 	return l [location]
 }
 

@@ -77,3 +77,6 @@ qotaOpr.Grow ()
 
 oprErr10 := err.New ("Unable to organize records of a sensor, based on day.", 1, qotaOpr.Value ())
 qotaOpr.Grow ()
+
+oprErr11 := err.New ("A sensor record could not be marshalled.", 1, qotaOpr.Value ())
+qotaOpr.Grow ()
