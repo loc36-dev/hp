@@ -361,22 +361,22 @@ func (d *completeData) format () (*formatedData) {
 
 			formattedStates := []_formattedState {}
 
-			currentState := dayStates [0].(_pureState)
+			currentState, _ := dayStates [0].(_pureState)
 
 			for index, value := range dayStates {
 				if currentState != value.(_pureState) {
 					currentState = value.(_pureState)
 					min :=  (index + 1) % 60
-					hour := int (((index + 1) - min) / 60)
+					hour := ((index + 1) - min) / 60
 					time := fmt.Sprintf ("%s%s", str.PrependTillN (strconv.Itoa (hour), "0", 2),
 						str.PrependTillN (strconv.Itoa (min), "0", 2))
-					someState := _formattedState {value.(_pureState), time}
+					someState := new__formattedState (value.(_pureState).state (), time)
 					formattedStates = append (formattedStates, someState)
 				}
 			}
 
 			if formattedStates [len (formattedStates) - 1].endTime () != "2400" {
-				someState := _formattedState {formattedStates [len (formattedStates) - 1].state (), "2400"}
+				someState := new__formattedState (formattedStates [len (formattedStates) - 1].state (), "2400")
 				formattedStates = append (formattedStates, someState)
 			}
 
@@ -395,7 +395,7 @@ func (d *completeData) format () (*formatedData) {
 	for iter.Next () {
 		sensorID := iter.Key ().(string)
 		sensorData := formatDays (iter.Key ().(map[interface {}] []interface {}))
-		data [sensorID] = sensorData
+		data.addDay (sensorID, sensorData)
 	}
 
 	return data
@@ -420,6 +420,10 @@ func new_formattedData () (*formattedData) {
 }
 
 type formattedData records map[string] map[string] []_formattedState
+
+func (d *formattedData) addDay (day string, record map[string] []_formattedState) {
+	d [day] = record
+}
 
 func new__formattedState (state int, endTime string) (*_formattedState) {}
 
