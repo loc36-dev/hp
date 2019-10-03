@@ -98,39 +98,6 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 	return new_requestRecords (states)
 }
 
-func new__state (state, day, time, sensor string) (*_state) {
-	return &_state {state, day, time, sensor}
-}
-
-type _state struct {
-	State  string
-	Day    string
-	Time   string
-	Sensor string
-}
-
-func (s *_state) state () (string) {
-	return s.state
-}
-
-func (s *_state) day () (string) {
-	return s.state
-}
-
-func (s *_state) time () (string) {
-	return s.state
-}
-
-func (s *_state) sensor () (string) {
-	return s.state
-}
-
-func new__requestData (r *http.Request) (*_requestData, error) {
-	var requestData _requestData
-	requestData, _ := mux.Vars (r)["locations"]
-	return &requestData, nil
-}
-
 type _requestData string
 
 // validate () checks if the request data of the client is valid. If the request data is not valid, the client's request would not be served.
@@ -266,6 +233,39 @@ func (r *requestRecords) organize () (result *organizedRequestRecords) {
 	return organizedRecords
 }
 
+func new__state (state, day, time, sensor string) (*_state) {
+	return &_state {state, day, time, sensor}
+}
+
+type _state struct {
+	State  string
+	Day    string
+	Time   string
+	Sensor string
+}
+
+func (s *_state) state () (string) {
+	return s.state
+}
+
+func (s *_state) day () (string) {
+	return s.state
+}
+
+func (s *_state) time () (string) {
+	return s.state
+}
+
+func (s *_state) sensor () (string) {
+	return s.state
+}
+
+func new__requestData (r *http.Request) (*_requestData, error) {
+	var requestData _requestData
+	requestData, _ := mux.Vars (r)["locations"]
+	return &requestData, nil
+}
+
 // -- Boundary -- //
 
 func new_organizedRequestRecords () (*organizedRequestRecords) {
@@ -337,18 +337,6 @@ func (r *organizedRequestRecords) complete () (*completeData) {
 	return data
 }
 
-func new__pureState (state byte) (*_pureState) {
-	var pureState _pureState
-	pureState = state
-	return &pureState
-}
-
-type _pureState byte
-
-func (s *_pureState) state () (byte) {
-	return byte (s)
-}
-
 // -- Boundary -- //
 
 func new_completeData () (*completeData) {
@@ -413,6 +401,28 @@ func (d *completeData) format () (*formatedData) {
 	return data
 }
 
+func new__pureState (state byte) (*_pureState) {
+	var pureState _pureState
+	pureState = state
+	return &pureState
+}
+
+type _pureState byte
+
+func (s *_pureState) state () (byte) {
+	return byte (s)
+}
+
+// -- Boundary -- //
+
+func new_formattedData () (*formattedData) {
+	return &map[string] map[string] []_formattedState
+}
+
+type formattedData records map[string] map[string] []_formattedState
+
+func new__formattedState (state int, endTime string) (*_formattedState) {}
+
 type _formattedState struct {
 	State int
 	EndTime string
@@ -424,10 +434,4 @@ func (s *_formattedState) state () (int) {
 
 func (s *_formattedState) endTime () (string) {
 	return r.EndTime
-}
-
-// -- Boundary -- //
-
-type formatedData struct {
-	records map[string] map[string] []_formattedState
 }
