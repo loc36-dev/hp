@@ -10,7 +10,7 @@ import (
 
 func init () {
 	var errX error
-	dayMonthYear, errX := regexp.Compile ("^20\d{2}(0[1-9]|1[0-2)(0[1-9]|[1-2]\d|3[0-1])$")
+	dayMonthYear, errX = regexp.Compile (`^20\d{2}(0[1-9]|1[0-2)(0[1-9]|[1-2]\d|3[0-1])$`)
 	if errX != nil {
 		str.PrintEtr ("Regular expression compilation failed.", "err", "init ()")
 		panic ("Regular expression compilation failed.")
@@ -52,7 +52,8 @@ func locationsSensors (locations []strings) (_locationsSensors, error) {
 	}
 
 	var (
-		location, sensor
+		location string
+		sensor string
 	)
 
 	result, errY := db.Query (query, locations...)
