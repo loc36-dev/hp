@@ -3,6 +3,7 @@ package server
 import (
 //	"database/sql"
 	"encoding/json"
+	"errors"
 	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
 	"gopkg.in/qamarian-dtp/squaket.v0" // v0.1.1
@@ -14,8 +15,8 @@ import (
 )
 
 func new_requestData (request string) (*requestData) {
-	data, _ := mux.Var
-	var data requestData = request
+	data, _ := mux.Var (request)["locHistory"]
+	var actualData requestData = data
 	return request
 }
 
@@ -25,7 +26,8 @@ type requestData string
 func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 	// Request data validation and retrieval. ..1.. {
 	var errX error
-	d, errX = new__requestData (r).validate ()
+
+	errX = new__requestData (string (d)).validate ()
 	if errX != nil {
 		err_ := err.New (oprErr9.Error (), oprErr9.Class (), oprErr9.Type (), errX)
 		panic (err_)
@@ -101,43 +103,48 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 	return new_requestRecords (states)
 }
 
+func new__requestData (data string) (*_requestData) {
+	var data _requestData = data
+	return &data
+}
+
 type _requestData string
 
 // validate () checks if the request data of the client is valid. If the request data is not valid, the client's request would not be served.
-func (d *_requestData) validate () (*requestData) {
+func (d *_requestData) validate () (error) {
 	// Checking if request data was properly formatted. ..1.. {
 	if d == "" {
-		panic (invErr0)
+		return errors,New ("No request data was provided.")
 	} else if len (d) > 1024 {
-		panic (invErr5)
+		return errors.New ("Request data too long.")
 	}
 
 	locations := strings.Split (d, "_")
 	if len (locations) > 32 {
-		panic (invErr6)
+		return error.New ("Data of over 32 locations requested.")
 	}
 
 	for _, location := range locations {
 		if location == "" {
-			panic (invErr1)
+			return errors.New ("ID and days for a location were not provided.")
 		}
 		locationData := strings.Split (location, "-")
 
 		if len (locationData) == 1 {
-			panic (invErr2)
+			return errors.New ("Days for a location were not provided.")
 		}
 
 		if locationData [0] == "" {
-			panic (invErr8)
+			return errors.New ("ID of a location was not provided.")
 		}
 
 		if len (locationData) > 33 {
-			panic (invErr7)
+			return errors.New ("Data of over 32 days requested for a location.")
 		}
 
 		for index := 1; index <= len (locationData) - 1; index ++ {
 			if dayMonthYear.Match (locationData [index]) == false {
-				panic (invErr3)
+				return errors.New ("Data of an invalid day requested for a location.")
 			}
 		}
 	}
@@ -146,22 +153,20 @@ func (d *_requestData) validate () (*requestData) {
 	// Validating existence of all locations. ..1.. {
 	sensors, errX := locationsSensors (extractLocationIDs (r))
 	if errX != nil {
-		err_ := err.New (oprErr1.Error (), oprErr1.Class (), oprErr1.Type (), errX)
-		panic (err_)
+		return err.New ("Unable to confirm existence of all locations.", nil, nil, errX)
 	}
 
 	ids := extractLocationIDs (r)
 
 	for _, id := range ids {
-		_, okX := sensors [id]
+		_, okX := sensors.getLocationSensor (id)
 		if okX == false {
-			err_ := err.New (oprErr2.Error (), oprErr2.Class (), oprErr2.Type ())
-			panic (err_)
+			return err.New ("One or more locations do not exist.")
 		}
 	}
 	// ..1.. }
 
-	return new_requestData (data)
+	return nil
 }
 
 // -- Boundary -- //
