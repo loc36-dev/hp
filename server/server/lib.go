@@ -1,8 +1,13 @@
 package server
 
 import (
+	"database/sql"
 	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
+	"gopkg.in/qamarian-lib/str.v2" // v2.0.0
+	"math/big"
+	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -18,7 +23,7 @@ func init () {
 }
 
 var (
-	dayMonthYear *Regexp // Cache
+	dayMonthYear *regexp.Regexp // Cache
 	db *sql.DB           // Cache
 )
 
@@ -32,7 +37,7 @@ func extractLocationIDs (r *http.Request) ([]string) {
 
 	for _, locationData := range locationsData {
 		segments := strings.Split (locationData, "-")
-		data = append (data, segments [0])
+		output = append (output, segments [0])
 	}
 
 	return output
@@ -40,7 +45,7 @@ func extractLocationIDs (r *http.Request) ([]string) {
 
 // -- Boundary -- //
 
-func locationsSensors (locations []strings) (_locationsSensors, error) {
+func locationsSensors (locations []string) (_locationsSensors, error) {
 	query := `SELECT id, sensor
 	FROM location
 	WHERE id IN (?` + strings.Repeat (", ?", len (locations) - 1) + ")"
@@ -48,7 +53,7 @@ func locationsSensors (locations []strings) (_locationsSensors, error) {
 	errX := db.Ping ()
 	if errX != nil {
 		errMssg := "Database unreachable."
-		return nil, err.New (errMssg, 0, 0, errX)
+		return nil, err.New (errMssg, big.NewInt (0), big.NewInt (0), errX)
 	}
 
 	var (
@@ -59,7 +64,7 @@ func locationsSensors (locations []strings) (_locationsSensors, error) {
 	result, errY := db.Query (query, locations...)
 	if errY != nil {
 		errMssg := "Unable to successfully query database for locations sensors."
-		return nil, err.New (errMssg, 0, 0, errY)
+		return nil, err.New (errMssg, big.NewInt (0), big.NewInt (0), errY)
 	}
 
 	output := _locationsSensors {}
@@ -68,7 +73,7 @@ func locationsSensors (locations []strings) (_locationsSensors, error) {
 		errZ := result.Scan (&location, &sensor)
 		if errZ != nil {
 			errMssg := "Unable to fetch the sensor of a location."
-			return nil, err.New (errMssg, 0, 0, errZ)
+			return nil, err.New (errMssg, big.NewInt (0), big.NewInt (0), errZ)
 		}
 
 		output.add (location, sensor)
