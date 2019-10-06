@@ -1,12 +1,13 @@
 package server
 
 import (
-	"database/sql"
+//	"database/sql"
 	"encoding/json"
 	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
 	"gopkg.in/qamarian-dtp/squaket.v0" // v0.1.1
 	"gopkg.in/qamarian-lib/str.v2"
+	"net/http"
 	"reflect"
 	"strings"
 	_ "gopkg.in/go-sql-driver/mysql.v1"
@@ -71,7 +72,7 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 	// ..1.. }
 
 	// Retrieving the states of all locations. ..1.. {
-	resultSetB, errB := db.Query (queryC, sensors..)
+	resultSetB, errB := db.Query (queryC, sensors...)
 	if errB != nil {
 		err_ := err.New (oprErr5.Error (), oprErr5.Class (), oprErr5.Type (), errB)
 		panic (err_)
@@ -80,9 +81,9 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 	var (
 		states []*_state
 		state string
-		day
-		time
-		sensor
+		day string
+		time string
+		sensor string
 	)
 
 	for resultSetB.Next () {
@@ -173,7 +174,7 @@ type requestRecords []_state
 
 func (r *requestRecords) organize () (result *organizedRequestRecords) {
 	// Function definitions. .. {
-	organizeByDay := func (sensorRecords []interface) (map[string] []_state, error) {
+	organizeByDay := func (sensorRecords []interface {}) (map[string] []_state, error) {
 		records, errA := squaket.New (sensorRecords)
 		if errA != nil {
 			errMssg := "Unable to make sensor records a squaket."
@@ -190,7 +191,7 @@ func (r *requestRecords) organize () (result *organizedRequestRecords) {
 
 		iter := reflect.ValueOf (sensorsRecords).MapRange ()
 		for iter.Next () {
-			dayRecords := iter.Value ().Interface ().([]interface)
+			dayRecords := iter.Value ().Interface ().([]interface {})
 			sensorID := iter.Key ().Interface ().(string)
 
 			stateTypeDayRecords := []_state {}
@@ -199,7 +200,7 @@ func (r *requestRecords) organize () (result *organizedRequestRecords) {
 			}
 
 			organizedRecords [sensorID] = stateTypeDayRecords
-		}	
+		}
 
 		return organizedRecords
 	}
@@ -221,7 +222,7 @@ func (r *requestRecords) organize () (result *organizedRequestRecords) {
 
 	iter := reflect.ValueOf (sensorsRecords).MapRange ()
 	for iter.Next () {
-		sensorRecords := iter.Value ().Interface ().([]interface)
+		sensorRecords := iter.Value ().Interface ().([]interface {})
 		organizedSensorRecords, errQ := organizeByDay (sensorRecords)
 		if errQ != nil {
 			err_ := err.New (oprErr10.Error (), oprErr10.Class (), oprErr10.Type (), errQ)

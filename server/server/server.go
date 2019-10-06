@@ -8,8 +8,11 @@ import (
 func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 	// Error handling. ...1... {
 	defer func () {
-		//
-	}
+		panicReason := recover ()
+		if panicReason != nil {
+		//	oprErr := l
+		}
+	} ()
 	// ...1... }
 
 	databaseRecords := new_requestData (r).fetchRecords (r)
