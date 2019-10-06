@@ -15,7 +15,7 @@ import (
 )
 
 func new_requestData (request string) (*requestData) {
-	data, _ := mux.Var (request)["locHistory"]
+	data, _ := mux.Var (request)["locations"]
 	var actualData requestData = data
 	return request
 }

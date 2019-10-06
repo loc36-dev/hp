@@ -13,19 +13,31 @@ import (
 
 // -- Boundary -- //
 
-func init () {
-	var errX error
-	dayMonthYear, errX = regexp.Compile (`^20\d{2}(0[1-9]|1[0-2)(0[1-9]|[1-2]\d|3[0-1])$`)
-	if errX != nil {
-		str.PrintEtr ("Regular expression compilation failed.", "err", "init ()")
-		panic ("Regular expression compilation failed.")
-	}
-}
-
 var (
 	dayMonthYear *regexp.Regexp // Cache
 	db *sql.DB           // Cache
 )
+
+func init () {
+	var (
+		err0 error
+		err1 error
+	)
+
+	// dayMonthYear initialization. ..1.. {
+	dayMonthYear, err0 = regexp.Compile (`^20\d{2}(0[1-9]|1[0-2)(0[1-9]|[1-2]\d|3[0-1])$`)
+	if err0 != nil {
+		errMssg := fmt.Sprintf ("Regular expression compilation failed. [%s]", err0.Error ())
+		str.PrintEtr (errMssg, "err", "init ()")
+		os.Exit (1)
+	}
+	// ..1..}
+
+	// db initialization. ..1.. {
+	db, err1 := sql.Open ()
+
+	// ..1.. }
+}
 
 // -- Boundary -- //
 
