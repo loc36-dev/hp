@@ -3,7 +3,7 @@ package server
 import (
 	"database/sql"
 	"gopkg.in/gorilla/mux.v1"
-	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
+	"gopkg.in/qamarian-dtp/err.v0" // v0.4.0
 	"gopkg.in/qamarian-lib/str.v2" // v2.0.0
 	"math/big"
 	"net/http"
@@ -45,7 +45,7 @@ func extractLocationIDs (r *http.Request) ([]string) {
 
 // -- Boundary -- //
 
-func locationsSensors (locations []string) (_locationsSensors, error) {
+func locationsSensors (locations []string) (*_locationsSensors, error) {
 	query := `SELECT id, sensor
 	FROM location
 	WHERE id IN (?` + strings.Repeat (", ?", len (locations) - 1) + ")"

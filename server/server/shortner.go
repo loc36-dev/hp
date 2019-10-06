@@ -14,6 +14,7 @@ import (
 )
 
 func new_requestData (request string) (*requestData) {
+	data, _ := mux.Var
 	var data requestData = request
 	return request
 }
