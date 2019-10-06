@@ -81,6 +81,7 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 
 var (
 	stdErr io.Writer = os.Stderr
+	conf string
 	outputFormat string = `{
 Response: "%s",
 Details: "%s"
@@ -89,3 +90,5 @@ Data: {
 }
 }`
 )
+
+func init () {}
