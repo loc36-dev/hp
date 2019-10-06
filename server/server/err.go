@@ -1,8 +1,8 @@
 package server
 
 import (
-	"gopkg.in/qamarian-dtp/qota.v0" // v0.
-	"gopkg.in/qamarian-dtp/err.v0"
+	"gopkg.in/qamarian-dtp/qota.v0" // v0.2.0
+	"gopkg.in/qamarian-dtp/err.v0" // 0.4.0
 	"math/big"
 )
 
@@ -16,8 +16,8 @@ var (
 	iotaInv *qota.Qota // Iota used for service errors caused by invalid request.
 	iotaOpr *qota.Qota // Iota used for service errors caused by operational errors.
 
-// Invalid request data Errors
 
+// Invalid request data Errors
 	invErr0 *err.Error
 	invErr1 *err.Error
 	invErr2 *err.Error
@@ -29,8 +29,8 @@ var (
 	invErr8 *err.Error
 	invErr9 *err.Error
 
-// Operational Errors
 
+// Operational Errors
 	oprErr0 *err.Error
 	oprErr1 *err.Error
 	oprErr2 *err.Error
