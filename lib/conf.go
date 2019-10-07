@@ -1,0 +1,9 @@
+package lib
+
+func NewConf () (*Conf, error) {}
+
+type Conf struct {
+	conf map[string]string
+}
+
+func (c *Conf) Get (name string) (string) {}
