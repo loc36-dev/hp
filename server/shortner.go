@@ -1,7 +1,6 @@
 package server
 
 import (
-//	"database/sql"
 	"encoding/json"
 	"errors"
 	"gopkg.in/gorilla/mux.v1"
@@ -11,10 +10,9 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
-	_ "gopkg.in/go-sql-driver/mysql.v1"
 )
 
-func new_requestData (request string) (*requestData) {
+func requestData_New (request string) (*requestData) {
 	data, _ := mux.Var (request)["locations"]
 	var actualData requestData = data
 	return request
@@ -27,7 +25,7 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 	// Request data validation and retrieval. ..1.. {
 	var errX error
 
-	errX = new__requestData (string (d)).validate ()
+	errX = _requestData_New (string (d)).validate ()
 	if errX != nil {
 		err_ := err.New (oprErr9.Error (), oprErr9.Class (), oprErr9.Type (), errX)
 		panic (err_)
@@ -100,10 +98,10 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 	}
 	// ..1.. }
 
-	return new_requestRecords (states)
+	return requestRecords_New (states)
 }
 
-func new__requestData (data string) (*_requestData) {
+func _requestData_New (data string) (*_requestData) {
 	var data _requestData = data
 	return &data
 }
@@ -171,7 +169,7 @@ func (d *_requestData) validate () (error) {
 
 // -- Boundary -- //
 
-func new_requestRecords (records []_state) (*requestRecords) {
+func requestRecords_New (records []_state) (*requestRecords) {
 	var output requestRecords = records
 	return &output
 }
@@ -224,7 +222,7 @@ func (r *requestRecords) organize () (result *organizedRequestRecords) {
 		panic (err_)
 	}
 
-	organizedRecords := new_organizedRequestRecords ()
+	organizedRecords := organizedRequestRecords_New ()
 
 	iter := reflect.ValueOf (sensorsRecords).MapRange ()
 	for iter.Next () {
@@ -241,7 +239,7 @@ func (r *requestRecords) organize () (result *organizedRequestRecords) {
 	return organizedRecords
 }
 
-func new__state (state, day, time, sensor string) (*_state) {
+func _state_New (state, day, time, sensor string) (*_state) {
 	return &_state {state, day, time, sensor}
 }
 
@@ -268,7 +266,7 @@ func (s *_state) sensor () (string) {
 	return s.state
 }
 
-func new__requestData (r *http.Request) (*_requestData, error) {
+func _requestData_New (r *http.Request) (*_requestData, error) {
 	var requestData _requestData
 	requestData, _ := mux.Vars (r)["locations"]
 	return &requestData, nil
@@ -276,7 +274,7 @@ func new__requestData (r *http.Request) (*_requestData, error) {
 
 // -- Boundary -- //
 
-func new_organizedRequestRecords () (*organizedRequestRecords) {
+func organizedRequestRecords_New () (*organizedRequestRecords) {
 	return &map[string] map[string] []_state
 }
 
@@ -333,7 +331,7 @@ func (r *organizedRequestRecords) complete () (*completeData) {
 	}
 	// .. }
 
-	data := new_completeData ()
+	data := completeData_New ()
 		
 	iter := reflect.ValueOf (r).MapRange ()
 	for iter.Next () {
@@ -347,7 +345,7 @@ func (r *organizedRequestRecords) complete () (*completeData) {
 
 // -- Boundary -- //
 
-func new_completeData () (*completeData) {
+func completeData_New () (*completeData) {
 	return &map[string] map[string] [1440]*_pureState {}
 }
 
@@ -378,13 +376,13 @@ func (d *completeData) format () (*formatedData) {
 					hour := ((index + 1) - min) / 60
 					time := fmt.Sprintf ("%s%s", str.PrependTillN (strconv.Itoa (hour), "0", 2),
 						str.PrependTillN (strconv.Itoa (min), "0", 2))
-					someState := new__formattedState (value.(_pureState).state (), time)
+					someState := _formattedState_New (value.(_pureState).state (), time)
 					formattedStates = append (formattedStates, someState)
 				}
 			}
 
 			if formattedStates [len (formattedStates) - 1].endTime () != "2400" {
-				someState := new__formattedState (formattedStates [len (formattedStates) - 1].state (), "2400")
+				someState := _formattedState_New (formattedStates [len (formattedStates) - 1].state (), "2400")
 				formattedStates = append (formattedStates, someState)
 			}
 
@@ -409,7 +407,7 @@ func (d *completeData) format () (*formatedData) {
 	return data
 }
 
-func new__pureState (state byte) (*_pureState) {
+func _pureState_New (state byte) (*_pureState) {
 	var pureState _pureState
 	pureState = state
 	return &pureState
@@ -423,7 +421,7 @@ func (s *_pureState) state () (byte) {
 
 // -- Boundary -- //
 
-func new_formattedData () (*formattedData) {
+func formattedData_New () (*formattedData) {
 	return &map[string] map[string] []_formattedState
 }
 
@@ -435,7 +433,7 @@ func (d *formattedData) addSensor (sensorID string, record map[string] []_format
 
 func (d *formattedData) marshal () (output *marshalledData) {
 	iter := reflect.ValueOf (d).MapRange ()
-	output = new_marshalledData ()
+	output = marshalledData_New ()
 
 	for iter.Next () {
 		sensorID := iter.Key ().(string)
@@ -451,7 +449,7 @@ func (d *formattedData) marshal () (output *marshalledData) {
 	return output
 }
 
-func new__formattedState (state int, endTime string) (*_formattedState) {}
+func _formattedState_New (state int, endTime string) (*_formattedState) {}
 
 type _formattedState struct {
 	State int
@@ -468,7 +466,7 @@ func (s *_formattedState) endTime () (string) {
 
 // -- Boundary -- //
 
-func new_marshalledData () (*marshalledData) {
+func marshalledData_New () (*marshalledData) {
 	var output marshalledData
 	return &output
 }

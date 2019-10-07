@@ -3,6 +3,7 @@ package server
 import (
 	"database/sql"
 	"gopkg.in/gorilla/mux.v1"
+	_ "gopkg.in/go-sql-driver/mysql.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.4.0
 	"gopkg.in/qamarian-lib/str.v2" // v2.0.0
 	"math/big"

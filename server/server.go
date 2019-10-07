@@ -38,7 +38,7 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 	} ()
 	// ...1... }
 
-	databaseRecords := new_requestData (r).fetchRecords (r)
+	databaseRecords := requestData_New (r).fetchRecords (r)
 	gData := databaseRecords.group ()
 	cData := gData.complete ()
 	fData := cData.format ()
