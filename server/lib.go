@@ -35,7 +35,7 @@ func init () {
 	// ..1..}
 
 	// db initialization. ..1.. {
-	connURLFormat := "%s:%s@tcp(%s:%d)/%s?timeout=%ss&tls=%s&serverPubKey=%s&writeTimeout=%ss&readTimeout=%ss"
+	connURLFormat := "%s:%s@tcp(%s:%d)/%s?timeout=%ss&tls=skip-verify&serverPubKey=%s&writeTimeout=%ss&readTimeout=%ss"
 	db, err1 := sql.Open ()
 	// ..1.. }
 }
