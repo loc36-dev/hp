@@ -1,0 +1,18 @@
+# Server conf
+
+service_addr: "" # ipv4
+service_port: 0
+service_tls_key: ""
+service_tls_crt: ""
+
+# DB conf
+
+server_pub_key: ""
+server_addr: "" # ipv4
+server_port: 0
+username: ""
+pass: ""
+db: ""
+conn_timeout: 0
+write_timeout: ""
+read_timeout: ""
