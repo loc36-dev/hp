@@ -7,12 +7,12 @@ service_tls_crt: ""
 
 # DB conf
 
-server_pub_key: ""
-server_addr: "" # ipv4
-server_port: 0
+dbms_pub_key: ""
+dbms_addr: "" # ipv4 and v6
+dbms_port: 0
 username: ""
 pass: ""
 db: ""
-conn_timeout: 0
-write_timeout: 0
-read_timeout: 0
+conn_timeout: 0  # Second would be used as unit
+write_timeout: 0 # Second would be used as unit
+read_timeout: 0  # Second would be used as unit
