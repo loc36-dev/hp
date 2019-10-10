@@ -9,6 +9,8 @@ import (
 func NewConf () (output *Conf, err error) {
 	output = &Conf {map[string]string {}}
 
+
+// Section A
 	// ..1.. {
 	conf, errX := viperLib.NewFileViper (confFileName, "yaml")
 	if errX != nil {
@@ -54,8 +56,6 @@ type Conf struct {
 }
 
 func (c *Conf) Get (name string) (string, error) {}
-
-
 
 var (
 	confFileName string = "./confFile.yml"

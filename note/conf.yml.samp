@@ -14,5 +14,5 @@ username: ""
 pass: ""
 db: ""
 conn_timeout: 0
-write_timeout: ""
-read_timeout: ""
+write_timeout: 0
+read_timeout: 0
