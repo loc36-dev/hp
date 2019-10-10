@@ -52,14 +52,14 @@ func init () {
 	var errC error
 	db, errC = sql.Open ("mysql", connURL)
 	if errC != nil {
-		errD := err.New ("Unable to connect to the database.", nil, nil, errC)
+		errD := err.New ("Database unreachable.", nil, nil, errC)
 		str.PrintEtr (errLib.Fup (errD), "err", "init ()")
 		os.Exit (1)
 	}
 
 	errE := db.Ping ()
 	if errE != nil {
-		errF := err.New ("Unable to connect to the database.", nil, nil, errE)
+		errF := err.New ("Database unreachable.", nil, nil, errE)
 		str.PrintEtr (errLib.Fup (errF), "err", "init ()")
 		os.Exit (1)
 	}
@@ -92,7 +92,7 @@ func locationsSensors (locations []string) (*_locationsSensors, error) {
 	errX := db.Ping ()
 	if errX != nil {
 		errMssg := "Database unreachable."
-		return nil, err.New (errMssg, big.NewInt (0), big.NewInt (0), errX)
+		return nil, err.New (errMssg, nil, nil, errX)
 	}
 
 	var (
@@ -103,16 +103,16 @@ func locationsSensors (locations []string) (*_locationsSensors, error) {
 	result, errY := db.Query (query, locations...)
 	if errY != nil {
 		errMssg := "Unable to successfully query database for locations sensors."
-		return nil, err.New (errMssg, big.NewInt (0), big.NewInt (0), errY)
+		return nil, err.New (errMssg, nil, nil, errY)
 	}
 
-	output := _locationsSensors {}
+	output := _locationsSensors_New ()
 
 	for result.Next () {
 		errZ := result.Scan (&location, &sensor)
 		if errZ != nil {
 			errMssg := "Unable to fetch the sensor of a location."
-			return nil, err.New (errMssg, big.NewInt (0), big.NewInt (0), errZ)
+			return nil, err.New (errMssg, nil, nil, errZ)
 		}
 
 		output.add (location, sensor)
@@ -121,14 +121,20 @@ func locationsSensors (locations []string) (*_locationsSensors, error) {
 	return output, nil
 }
 
-type _locationsSensors map[string]string
+func _locationsSensors_New () (*_locationsSensors) {
+	return &_locationsSensors {map[string]string {}}
+}
+
+type _locationsSensors struct {
+	value map[string]string
+}
 
 func (l *_locationsSensors) add (location, sensor string) {
-	l [location] = sensor
+	l.value [location] = sensor
 }
 
 func (l *_locationsSensors) getLocationSensor (location string) (string, bool) {
-	return l [location]
+	return l.value [location]
 }
 
 // -- Boundary -- //
