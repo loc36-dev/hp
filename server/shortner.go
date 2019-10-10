@@ -14,66 +14,44 @@ import (
 
 func requestData_New (request string) (*requestData) {
 	data, _ := mux.Var (request)["locations"]
-	var actualData requestData = data
-	return request
+	return &requestData {data}
 }
 
-type requestData string
+type requestData struct {
+	value string
+}
 
 // fetchRecords () fetches all location state records matching the request of the user.
 func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 	// Request data validation and retrieval. ..1.. {
 	var errX error
 
-	errX = _requestData_New (string (d)).validate ()
+	errX = _requestData_New (r).validate ()
 	if errX != nil {
 		err_ := err.New (oprErr9.Error (), oprErr9.Class (), oprErr9.Type (), errX)
 		panic (err_)
 	}
 	// ..1.. }
 
-	// Constructing query required to retrieve the sensor IDs of all locations. ..1.. {
-	queryB := `
-		SELECT sensor
-		FROM location
-		WHERE id IN (?
-	` + strings.Repeat (", ?", len (extractLocationIDs (r)) - 1) + ")"
-	// ..1.. }
-
-	// Retrieving the sensor IDs of all locations. ..1.. {
-	resultSet, errZ := db.Query (query, extractLocationIDs (r)...)
-	if errZ != nil {
-		err_ := err.New (oprErr3.Error (), oprErr3.Class (), oprErr3.Type (), errZ)
+	// Fetching sensor IDs of all locations. ..1.. {
+	sensors, errY := locationsSensors (extractLocationIDs (r))
+	if errY != nil {
+		err_ := err.New (oprErr3.Error (), oprErr3.Class (), oprErr3.Type (), errY)
 		panic (err_)
 	}
-
-	sensors := []string {}
-
-	for resultSet.Next () {
-		var (
-			sensorID string
-		)
-
-		errA := resultSet.Scan (&sensorID)
-		if errA != nil {
-			err_ := err.New (oprErr4.Error (), oprErr4.Class (), oprErr4.Type (), errA)
-			panic (err_)
-		}
-
-		sensors = append (sensors, sensorID)
-	}
+	onlySensorIDs = sensors.sensors ()
 	// ..1.. }
 
-	// Constructing query required to retrieve states from the database. ..1.. {
+	// Fetching state records of sensors. ..1.. {
+	// | --
 	queryC := `
 		SELECT UNIQUE state, day, time, sensor
 		FROM state
 		WHERE sensor IN (?
-	` + strings.Repeat (", ?", len (sensors) - 1) + ")"
-	// ..1.. }
+	` + strings.Repeat (", ?", len (onlySensorIDs) - 1) + ")"
+	// -- |
 
-	// Retrieving the states of all locations. ..1.. {
-	resultSetB, errB := db.Query (queryC, sensors...)
+	resultSetB, errB := db.Query (queryC, onlySensorIDs...)
 	if errB != nil {
 		err_ := err.New (oprErr5.Error (), oprErr5.Class (), oprErr5.Type (), errB)
 		panic (err_)
@@ -102,22 +80,23 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 }
 
 func _requestData_New (data string) (*_requestData) {
-	var data _requestData = data
-	return &data
+	return &_requestData {data}
 }
 
-type _requestData string
+type _requestData struct {
+	value string
+}
 
 // validate () checks if the request data of the client is valid. If the request data is not valid, the client's request would not be served.
-func (d *_requestData) validate () (error) {
+func (d *_requestData) validate (r *http.Request) (error) {
 	// Checking if request data was properly formatted. ..1.. {
-	if d == "" {
+	if d.value == "" {
 		return errors,New ("No request data was provided.")
-	} else if len (d) > 1024 {
+	} else if len (d.value) > 1024 {
 		return errors.New ("Request data too long.")
 	}
 
-	locations := strings.Split (d, "_")
+	locations := strings.Split (d.value, "_")
 	if len (locations) > 32 {
 		return error.New ("Data of over 32 locations requested.")
 	}
@@ -141,7 +120,7 @@ func (d *_requestData) validate () (error) {
 		}
 
 		for index := 1; index <= len (locationData) - 1; index ++ {
-			if dayMonthYear.Match (locationData [index]) == false {
+			if ! dayMonthYear.Match (locationData [index]) {
 				return errors.New ("Data of an invalid day requested for a location.")
 			}
 		}

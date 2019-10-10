@@ -9,6 +9,7 @@ import (
 	"gopkg.in/qamarian-lib/str.v2" // v3.0.0
 	"math/big"
 	"net/http"
+	"reflect"
 	"regexp"
 	"strings"
 	"url"
@@ -122,19 +123,28 @@ func locationsSensors (locations []string) (*_locationsSensors, error) {
 }
 
 func _locationsSensors_New () (*_locationsSensors) {
-	return &_locationsSensors {map[string]string {}}
+	return &map[string]string {}
 }
 
-type _locationsSensors struct {
-	value map[string]string
-}
+type _locationsSensors map[string]string
 
 func (l *_locationsSensors) add (location, sensor string) {
-	l.value [location] = sensor
+	l [location] = sensor
 }
 
 func (l *_locationsSensors) getLocationSensor (location string) (string, bool) {
-	return l.value [location]
+	return l [location]
 }
 
+func (l *_locationsSensors) sensors () ([]string) {
+	iter := reflect.ValueOf (l).MapRange ()
+	output := []string {}
+
+	for iter.Next () {
+		sensorID := iter.Value ().Interface ().(string)
+		output = append (output, sensorID)
+	}
+
+	return output
+}
 // -- Boundary -- //
