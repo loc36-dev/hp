@@ -5,11 +5,14 @@ import (
 	"gopkg.in/gorilla/mux.v1"
 	_ "gopkg.in/go-sql-driver/mysql.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.4.0
-	"gopkg.in/qamarian-lib/str.v2" // v2.0.0
+	errLib "gopkg.in/qamarian-lib/err.v0" // v0.4.0
+	"gopkg.in/qamarian-lib/str.v2" // v3.0.0
 	"math/big"
 	"net/http"
 	"regexp"
 	"strings"
+	"url"
+	"../lib"
 )
 
 // -- Boundary -- //
@@ -26,17 +29,40 @@ func init () {
 	)
 
 	// dayMonthYear initialization. ..1.. {
-	dayMonthYear, err0 = regexp.Compile (`^20\d{2}(0[1-9]|1[0-2)(0[1-9]|[1-2]\d|3[0-1])$`)
-	if err0 != nil {
-		errMssg := fmt.Sprintf ("Regular expression compilation failed. [%s]", err0.Error ())
-		str.PrintEtr (errMssg, "err", "init ()")
+	dayMonthYear, errX = regexp.Compile (`^20\d{2}(0[1-9]|1[0-2)(0[1-9]|[1-2]\d|3[0-1])$`)
+	if errX != nil {
+		errY := err.New ("Regular expression compilation failed.", nil, nil, errX)
+		str.PrintEtr (errLib.Fup (errY), "err", "init ()")
 		os.Exit (1)
 	}
 	// ..1..}
 
 	// db initialization. ..1.. {
-	connURLFormat := "%s:%s@tcp(%s:%d)/%s?timeout=%ss&tls=skip-verify&serverPubKey=%s&writeTimeout=%ss&readTimeout=%ss"
-	db, err1 := sql.Open ()
+	connURLFormat := "%s:%s@tcp(%s:%s)/%s?tls=skip-verify&serverPubKey=%s&timeout=%ss&writeTimeout=%ss&readTimeout=%ss"
+
+	conf, errA := lib.NewConf ()
+	if errA != nil {
+		errB := err.New ("Unable to load service's configuration.", nil, nil, errA)
+		str.PrintEtr (err.Fup (errB), "err", "init ()")
+		os.Exit (1)
+	}
+
+	connURL := fmt.Sprintf (connURLFormat, url.QueryEscape (conf ["username"]), url.QueryEscape (conf ["pass"]), url.QueryEscape (conf ["dbms_addr"]), url.QueryEscape (conf ["dbms_port"]), url.QueryEscape (conf ["db"]), url.QueryEscape (conf ["conn_timeout"]), url.QueryEscape (conf ["dbms_pub_key"]), url.QueryEscape (conf ["write_timeout"], conf ["read_timeout"]))
+
+	var errC error
+	db, errC = sql.Open ("mysql", connURL)
+	if errC != nil {
+		errD := err.New ("Unable to connect to the database.", nil, nil, errC)
+		str.PrintEtr (errLib.Fup (errD), "err", "init ()")
+		os.Exit (1)
+	}
+
+	errE := db.Ping ()
+	if errE != nil {
+		errF := err.New ("Unable to connect to the database.", nil, nil, errE)
+		str.PrintEtr (errLib.Fup (errF), "err", "init ()")
+		os.Exit (1)
+	}
 	// ..1.. }
 }
 
