@@ -5,8 +5,8 @@ import (
 	"errors"
 	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
-	"gopkg.in/qamarian-dtp/squaket.v0" // v0.1.1
 	"gopkg.in/qamarian-lib/str.v2"
+	"gopkg.in/qamarian-lib/structs.v0" // v0.1.0
 	"net/http"
 	"reflect"
 	"strings"
@@ -72,7 +72,7 @@ func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
 			panic (err_)
 		}
 
-		states := append (states, new__state (state, day, time, sensor))
+		states := append (states, _state_New (state, day, time, sensor))
 	}
 	// ..1.. }
 
@@ -148,38 +148,34 @@ func (d *_requestData) validate (r *http.Request) (error) {
 
 // -- Boundary -- //
 
-func requestRecords_New (records []_state) (*requestRecords) {
-	var output requestRecords = records
-	return &output
+func requestRecords_New (records []*_state) (output *requestRecords) {
+	output = &requestRecords {records}
+	return output
 }
 
-type requestRecords []_state
+type requestRecords struct {
+	value []*_state
+}
 
-func (r *requestRecords) organize () (result *organizedRequestRecords) {
+func (r *requestRecords) group () (result *organizedRequestRecords) {
 	// Function definitions. .. {
-	organizeByDay := func (sensorRecords []interface {}) (map[string] []_state, error) {
-		records, errA := squaket.New (sensorRecords)
-		if errA != nil {
-			errMssg := "Unable to make sensor records a squaket."
-			return nil, err.New (errMssg, 0, 0, errA)
-		}
-
-		sensorsRecords, errB := records.Group ("Day")
+	organizeByDay := func (sensorRecords []interface {}) (map[string] []*_state, error) {
+		sensorsRecords, errB := structs.Group ("Day", sensorRecords...)
 		if errB != nil {
 			errMssg := "Unable to group records of the sensor."
 			return nil, err.New (errMssg, 0, 0, errB)
 		}
 
-		organizedRecords := map[string] []_state {}
+		organizedRecords := map[string] []*_state {}
 
 		iter := reflect.ValueOf (sensorsRecords).MapRange ()
 		for iter.Next () {
 			dayRecords := iter.Value ().Interface ().([]interface {})
 			sensorID := iter.Key ().Interface ().(string)
 
-			stateTypeDayRecords := []_state {}
+			stateTypeDayRecords := []*_state {}
 			for _, record := range dayRecords {
-				stateTypeDayRecords = append (stateTypeDayRecords, record.(_state))
+				stateTypeDayRecords = append (stateTypeDayRecords, record.(*_state))
 			}
 
 			organizedRecords [sensorID] = stateTypeDayRecords
@@ -189,13 +185,7 @@ func (r *requestRecords) organize () (result *organizedRequestRecords) {
 	}
 	// .. }
 
-	records, errX := squaket.New (r)
-	if errX != nil {
-		err_ := err.New (oprErr7.Error (), oprErr7.Class (), oprErr7.Type (), errX)
-		panic (err_)
-	}
-
-	sensorsRecords, errY := records.Group ("Sensor")
+	sensorsRecords, errY := structs.Group ("Sensor", r.value...)
 	if errY != nil {
 		err_ := err.New (oprErr8.Error (), oprErr8.Class (), oprErr8.Type (), errY)
 		panic (err_)
@@ -234,27 +224,21 @@ func (s *_state) state () (string) {
 }
 
 func (s *_state) day () (string) {
-	return s.state
+	return s.day
 }
 
 func (s *_state) time () (string) {
-	return s.state
+	return s.time
 }
 
 func (s *_state) sensor () (string) {
-	return s.state
-}
-
-func _requestData_New (r *http.Request) (*_requestData, error) {
-	var requestData _requestData
-	requestData, _ := mux.Vars (r)["locations"]
-	return &requestData, nil
+	return s.sensor
 }
 
 // -- Boundary -- //
 
 func organizedRequestRecords_New () (*organizedRequestRecords) {
-	return &map[string] map[string] []_state
+	return &map[string] map[string] []*_state
 }
 
 type organizedRequestRecords map[string] map[string] []_state
