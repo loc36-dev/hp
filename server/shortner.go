@@ -395,22 +395,22 @@ func (s *_pureState) state () (byte) {
 // -- Boundary -- //
 
 func formattedData_New () (*formattedData) {
-	return &map[string] map[string] []_formattedState
+	return &map[string] map[string][]*_formattedState {}
 }
 
-type formattedData map[string] map[string] []_formattedState
+type formattedData map[string] map[string][]*_formattedState
 
-func (d *formattedData) addSensor (sensorID string, record map[string] []_formattedState) {
-	d [sensorID] = record
+func (d *formattedData) addSensor (sensorID string, record map[string][]*_formattedState) {
+	*d [sensorID] = record
 }
 
 func (d *formattedData) marshal () (output *marshalledData) {
-	iter := reflect.ValueOf (d).MapRange ()
 	output = marshalledData_New ()
 
+	iter := reflect.ValueOf (d).MapRange ()
 	for iter.Next () {
 		sensorID := iter.Key ().(string)
-		sensorData := iter.Key ().(map[interface {}] []interface {})
+		sensorData := iter.Key ().(map[string][]*_formattedState)
 		data, errX := json.Marshal (sensorData)
 		if errX != nil {
 			err_ := err.New (oprErr11.Error (), oprErr11.Class (), oprErr11.Type (), errX)
@@ -442,16 +442,15 @@ func (s *_formattedState) endTime () (string) {
 // -- Boundary -- //
 
 func marshalledData_New () (*marshalledData) {
-	var output marshalledData
-	return &output
+	return &marshalledData {}
 }
 
 type marshalledData map[string]string
 
 func (d *marshalledData) addSensorData (sensorID, data string) {
-	d [sensorID] = data
+	*d [sensorID] = data
 }
 
 func (d *marshalledData) getSensorData (sensorID string) (string, bool) {
-	return d [sensorID]
+	return *d [sensorID]
 }
