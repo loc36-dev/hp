@@ -312,13 +312,15 @@ func (r *groupedRequestRecords) complete () (*completeData) {
 // -- Boundary -- //
 
 func completeData_New () (*completeData) {
-	return &map[string] map[string] [1440]*_pureState {}
+	return &completeData {map[string] map[string] [1440]*_pureState {}}
 }
 
-type completeData map[string] map[string] [1440]*_pureState
+type completeData struct {
+	value map[string] map[string] [1440]*_pureState
+}
 
 func (d *completeData) add (sensorID string, data map[string] [1440]*_pureState) {
-	d [sensorID] = data
+	d.value [sensorID] = data
 }
 
 func (d *completeData) format () (*formatedData) {
@@ -363,7 +365,7 @@ func (d *completeData) format () (*formatedData) {
 		map[string] map[string] []_formattedState {},
 	}
 
-	iter := reflect.ValueOf (r.records).MapRange ()
+	iter := reflect.ValueOf (d.value).MapRange ()
 	for iter.Next () {
 		sensorID := iter.Key ().(string)
 		sensorData := formatDays (iter.Key ().(map[interface {}] []interface {}))
