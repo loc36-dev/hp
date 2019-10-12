@@ -2,10 +2,12 @@ package server
 
 import (
 	"fmt"
+	"io"
 	"gopkg.in/qamarian-dtp/err.v0" // 0.4.0
 	errLib "gopkg.in/qamarian-lib/err.v0" // 0.4.0
-	"math/big"
+	"log"
 	"net/http"
+	"os"
 )
 
 func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
@@ -16,29 +18,28 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		reason, okX := panicReason ().(err.Error)
+		reason, okX := panicReason.(err.Error)
 
 		if okX == true && reason.Class ().Cmp (invErrID) == 0 {
-			errDetails := fmt.Sprintf ("Invalid request data. [%s]", errLib.Fup (reason))
+			errDetails := fmt.Sprintf ("Invalid request data. [%s]", errLib.Fup (&reason))
 			w.Write ([]byte (fmt.Sprintf (outputFormat, "rsp1", errDetails, "")))
 
 			return
 		} else {
-			w.Write ([]byte (fmt.Sprintf ("An error occured.", "rsp2", errDetails, "")))
+			w.Write ([]byte (fmt.Sprintf (outputFormat, "rsp2", "An error occured.", "")))
 
 			errDetails := fmt.Sprintf ("A panic occured. [%v]", panicReason)
 			if okX == true {
-				errDetails = fmt.Sprintf ("An error occured. [%s]", errLib.Fup (reason))
+				errDetails = fmt.Sprintf ("An error occured. [%s]", errLib.Fup (&reason))
 			}
-			log := log.New (stdErr, "", log.LDate | log.Ltime)
-			log.WriteString (errDetails)
+			stdErr.Write ([]byte (errDetails))
 
 			return
 		}
 	} ()
 	// ...1... }
 
-	databaseRecords := requestData_New (r).fetchRecords (r)
+	databaseRecords := requestData_New (r).fetchRecords ()
 	gData := databaseRecords.group ()
 	cData := gData.complete ()
 	fData := cData.format ()
@@ -83,12 +84,18 @@ var (
 	stdErr io.Writer = os.Stderr
 	conf string
 	outputFormat string = `{
+
+ServiceID: "0"
+Version: "v0.1.0"
 Response: "%s",
 Details: "%s"
 Data: {
 %s
 }
+
 }`
 )
 
-func init () {}
+func init () {
+	stdErr = log.New (stdErr, "", log.Ldate | log.Ltime).Writer ()
+}

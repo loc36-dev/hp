@@ -12,21 +12,20 @@ import (
 	"strings"
 )
 
-func requestData_New (request string) (*requestData) {
-	data, _ := mux.Var (request)["locations"]
+func requestData_New (request *http.Request) (*requestData) {
 	return &requestData {data}
 }
 
 type requestData struct {
-	value string
+	value *http.Request
 }
 
 // fetchRecords () fetches all location state records matching the request of the user.
-func (d *requestData) fetchRecords (r *http.Request) (*requestRecords) {
+func (d *requestData) fetchRecords () (*requestRecords) {
 	// Request data validation and retrieval. ..1.. {
 	var errX error
 
-	errX = _requestData_New (r).validate ()
+	errX = _requestData_New (d.value).validate ()
 	if errX != nil {
 		err_ := err.New (oprErr9.Error (), oprErr9.Class (), oprErr9.Type (), errX)
 		panic (err_)

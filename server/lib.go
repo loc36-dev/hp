@@ -2,6 +2,7 @@ package server
 
 import (
 	"database/sql"
+	"fmt"
 	"gopkg.in/gorilla/mux.v1"
 	_ "gopkg.in/go-sql-driver/mysql.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.4.0
@@ -12,6 +13,7 @@ import (
 	"regexp"
 	"strings"
 	"net/url"
+	"os"
 	"../lib"
 )
 
@@ -23,12 +25,8 @@ var (
 )
 
 func init () {
-	var (
-		err0 error
-		err1 error
-	)
-
 	// dayMonthYear initialization. ..1.. {
+	var errX error
 	dayMonthYear, errX = regexp.Compile (`^20\d{2}(0[1-9]|1[0-2)(0[1-9]|[1-2]\d|3[0-1])$`)
 	if errX != nil {
 		errY := err.New ("Regular expression compilation failed.", nil, nil, errX)
@@ -43,11 +41,11 @@ func init () {
 	conf, errA := lib.NewConf ()
 	if errA != nil {
 		errB := err.New ("Unable to load service's configuration.", nil, nil, errA)
-		str.PrintEtr (err.Fup (errB), "err", "init ()")
+		str.PrintEtr (errLib.Fup (errB), "err", "init ()")
 		os.Exit (1)
 	}
 
-	connURL := fmt.Sprintf (connURLFormat, url.QueryEscape (conf ["username"]), url.QueryEscape (conf ["pass"]), url.QueryEscape (conf ["dbms_addr"]), url.QueryEscape (conf ["dbms_port"]), url.QueryEscape (conf ["db"]), url.QueryEscape (conf ["conn_timeout"]), url.QueryEscape (conf ["dbms_pub_key"]), url.QueryEscape (conf ["write_timeout"], conf ["read_timeout"]))
+	connURL := fmt.Sprintf (connURLFormat, url.QueryEscape ((*conf) ["username"]), url.QueryEscape ((*conf) ["pass"]), url.QueryEscape ((*conf) ["dbms_addr"]), url.QueryEscape ((*conf) ["dbms_port"]), url.QueryEscape ((*conf) ["db"]), url.QueryEscape ((*conf) ["conn_timeout"]), url.QueryEscape ((*conf) ["dbms_pub_key"]), url.QueryEscape ((*conf) ["write_timeout"]), url.QueryEscape ((*conf) ["read_timeout"]))
 
 	var errC error
 	db, errC = sql.Open ("mysql", connURL)
@@ -100,7 +98,13 @@ func locationsSensors (locations []string) (*_locationsSensors, error) {
 		sensor string
 	)
 
-	result, errY := db.Query (query, locations...)
+	// | --
+	interfacedData := []interface {}{}
+	for _, value := range locations {
+		interfacedData := append (interfacedData, value)
+	}
+	// -- |
+	result, errY := db.Query (query, interfacedData...)
 	if errY != nil {
 		errMssg := "Unable to successfully query database for locations sensors."
 		return nil, err.New (errMssg, nil, nil, errY)
@@ -122,17 +126,18 @@ func locationsSensors (locations []string) (*_locationsSensors, error) {
 }
 
 func _locationsSensors_New () (*_locationsSensors) {
-	return &map[string]string {}
+	return &_locationsSensors {}
 }
 
 type _locationsSensors map[string]string
 
 func (l *_locationsSensors) add (location, sensor string) {
-	l [location] = sensor
+	(*l) [location] = sensor
 }
 
 func (l *_locationsSensors) getLocationSensor (location string) (string, bool) {
-	return l [location]
+	output, okX := (*l) [location]
+	return output, okX
 }
 
 func (l *_locationsSensors) sensors () ([]string) {
