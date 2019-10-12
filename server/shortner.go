@@ -13,7 +13,7 @@ import (
 )
 
 func requestData_New (request *http.Request) (*requestData) {
-	return &requestData {data}
+	return &requestData {request}
 }
 
 type requestData struct {
@@ -33,12 +33,12 @@ func (d *requestData) fetchRecords () (*requestRecords) {
 	// ..1.. }
 
 	// Fetching sensor IDs of all locations. ..1.. {
-	sensors, errY := locationsSensors (extractLocationIDs (r))
+	sensors, errY := locationsSensors (extractLocationIDs (d.value))
 	if errY != nil {
 		err_ := err.New (oprErr3.Error (), oprErr3.Class (), oprErr3.Type (), errY)
 		panic (err_)
 	}
-	onlySensorIDs = sensors.sensors ()
+	onlySensorIDs := sensors.sensors ()
 	// ..1.. }
 
 	// Fetching state records of sensors. ..1.. {
@@ -50,7 +50,13 @@ func (d *requestData) fetchRecords () (*requestRecords) {
 	` + strings.Repeat (", ?", len (onlySensorIDs) - 1) + ")"
 	// -- |
 
-	resultSetB, errB := db.Query (queryC, onlySensorIDs...)
+	// | --
+	interfacedDataX := []interface {}{}
+	for _, value := range onlySensorIDs {
+		interfacedDataX := append (interfacedDataX, value)
+	}
+	// -- |
+	resultSetB, errB := db.Query (queryC, interfacedDataX...)
 	if errB != nil {
 		err_ := err.New (oprErr5.Error (), oprErr5.Class (), oprErr5.Type (), errB)
 		panic (err_)
@@ -78,26 +84,28 @@ func (d *requestData) fetchRecords () (*requestRecords) {
 	return requestRecords_New (states)
 }
 
-func _requestData_New (data string) (*_requestData) {
+func _requestData_New (data *http.Request) (*_requestData) {
 	return &_requestData {data}
 }
 
 type _requestData struct {
-	value string
+	value *http.Request
 }
 
 // validate () checks if the request data of the client is valid. If the request data is not valid, the client's request would not be served.
-func (d *_requestData) validate (r *http.Request) (error) {
+func (d *_requestData) validate () (error) {
+	value, _ := mux.Vars (d.value)["locations"]
+
 	// Checking if request data was properly formatted. ..1.. {
-	if d.value == "" {
-		return errors,New ("No request data was provided.")
-	} else if len (d.value) > 1024 {
+	if value == "" {
+		return errors.New ("No request data was provided.")
+	} else if len (value) > 1024 {
 		return errors.New ("Request data too long.")
 	}
 
-	locations := strings.Split (d.value, "_")
+	locations := strings.Split (value, "_")
 	if len (locations) > 32 {
-		return error.New ("Data of over 32 locations requested.")
+		return errors.New ("Data of over 32 locations requested.")
 	}
 
 	for _, location := range locations {
@@ -127,17 +135,17 @@ func (d *_requestData) validate (r *http.Request) (error) {
 	// ..1.. }
 
 	// Validating existence of all locations. ..1.. {
-	sensors, errX := locationsSensors (extractLocationIDs (r))
+	sensors, errX := locationsSensors (extractLocationIDs (d.value))
 	if errX != nil {
 		return err.New ("Unable to confirm existence of all locations.", nil, nil, errX)
 	}
 
-	ids := extractLocationIDs (r)
+	ids := extractLocationIDs (d.value)
 
 	for _, id := range ids {
 		_, okX := sensors.getLocationSensor (id)
 		if okX == false {
-			return err.New ("One or more locations do not exist.")
+			return err.New ("One or more locations do not exist.", nil, nil)
 		}
 	}
 	// ..1.. }
@@ -162,7 +170,7 @@ func (r *requestRecords) group () (result *groupedRequestRecords) {
 		sensorsRecords, errB := structs.Group ("Day", sensorRecords...)
 		if errB != nil {
 			errMssg := "Unable to group records of the sensor."
-			return nil, err.New (errMssg, 0, 0, errB)
+			return nil, err.New (errMssg, nil, nil, errB)
 		}
 
 		organizedRecords := map[string] []*_state {}
@@ -180,7 +188,7 @@ func (r *requestRecords) group () (result *groupedRequestRecords) {
 			organizedRecords [sensorID] = stateTypeDayRecords
 		}
 
-		return organizedRecords
+		return organizedRecords, nil
 	}
 	// .. }
 
