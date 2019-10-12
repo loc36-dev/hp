@@ -312,45 +312,48 @@ func (r *groupedRequestRecords) complete () (*completeData) {
 // -- Boundary -- //
 
 func completeData_New () (*completeData) {
-	return &completeData {map[string] map[string] [1440]*_pureState {}}
+	return &completeData {map[string] map[string][1440]*_pureState {}}
 }
 
 type completeData struct {
-	value map[string] map[string] [1440]*_pureState
+	value map[string] map[string][1440]*_pureState
 }
 
-func (d *completeData) add (sensorID string, data map[string] [1440]*_pureState) {
+func (d *completeData) add (sensorID string, data map[string][1440]*_pureState) {
 	d.value [sensorID] = data
 }
 
 func (d *completeData) format () (*formatedData) {
 	// Function definitions. ..1.. {
-	formatDays := func (days map[interface {}] []interface {}) (map[string] []_formattedState) {
-		formattedDays := map[string] []_formattedState {}
+	formatDays := func (days map[string][1440]*_pureState) (map[string] []_formattedState) {
+		formattedDays := map[string][]*_formattedState {}
 
 		iter := reflect.ValueOf (days).MapRange ()
 		for iter.Next () {
+			formattedStates := []*_formattedState {}
+
 			dayID := iter.Key.(string)
-			dayStates := iter.Value.([]interface {})
-
-			formattedStates := []_formattedState {}
-
-			currentState, _ := dayStates [0].(_pureState)
+			dayStates := day [dayID]
+			currentState, _ := dayStates[0].state ()
 
 			for index, value := range dayStates {
-				if currentState != value.(_pureState) {
-					currentState = value.(_pureState)
-					min :=  (index + 1) % 60
-					hour := ((index + 1) - min) / 60
-					time := fmt.Sprintf ("%s%s", str.PrependTillN (strconv.Itoa (hour), "0", 2),
-						str.PrependTillN (strconv.Itoa (min), "0", 2))
-					someState := _formattedState_New (value.(_pureState).state (), time)
+				if currentState != value.state () {
+					currentState = value.state ()
+
+					hourMin :=  (index + 1) % 60
+					hour := ((index + 1) - hourMin) / 60
+					hr := str.PrependTillN (strconv.Itoa (hour), "0", 2)
+					mn := str.PrependTillN (strconv.Itoa (hourMin), "0", 2)
+					time := fmt.Sprintf ("%s%s", hr, min)
+
+					someState := _formattedState_New (value.state (), time)
 					formattedStates = append (formattedStates, someState)
 				}
 			}
 
-			if formattedStates [len (formattedStates) - 1].endTime () != "2400" {
-				someState := _formattedState_New (formattedStates [len (formattedStates) - 1].state (), "2400")
+			lastRecord := formattedStates [len (formattedStates) - 1]
+			if lastRecord.endTime () != "2400" {
+				someState := _formattedState_New (currentState, "2400")
 				formattedStates = append (formattedStates, someState)
 			}
 
@@ -361,14 +364,12 @@ func (d *completeData) format () (*formatedData) {
 	}
 	// ..1.. }
 
-	data := &formatedData {
-		map[string] map[string] []_formattedState {},
-	}
+	data := formattedData_New ()
 
 	iter := reflect.ValueOf (d.value).MapRange ()
 	for iter.Next () {
 		sensorID := iter.Key ().(string)
-		sensorData := formatDays (iter.Key ().(map[interface {}] []interface {}))
+		sensorData := formatDays (d.value [sensorID])
 		data.addSensor (sensorID, sensorData)
 	}
 
@@ -421,14 +422,16 @@ func (d *formattedData) marshal () (output *marshalledData) {
 	return output
 }
 
-func _formattedState_New (state int, endTime string) (*_formattedState) {}
+func _formattedState_New (state byte, endTime string) (*_formattedState) {
+	return &_formattedState	{state, endTime}
+}
 
 type _formattedState struct {
-	State int
+	State byte
 	EndTime string
 }
 
-func (s *_formattedState) state () (int) {
+func (s *_formattedState) state () (byte) {
 	return r.State
 }
 
