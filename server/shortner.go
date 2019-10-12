@@ -261,7 +261,7 @@ func (r *groupedRequestRecords) complete () (*completeData) {
 
 			pureStates := [1440]*_pureState {}
 			for index, _ := range pureStates {
-				pureStates [index] = -1
+				pureStates [index] = _pureState_New (-1)
 			}
 
 			for _, value := range dayStates {
@@ -275,19 +275,20 @@ func (r *groupedRequestRecords) complete () (*completeData) {
 
 				minIndex := min - 1
 
-				if (minIndex - 4) > 0 && pureStates [minIndex - 4] == -1 {
-					pureStates [minIndex - 4] = byte (strconv.Atoi (value.(_state).state ()))
+				if (minIndex - 4) >= 0 && pureStates [minIndex - 4].state () == -1 {
+					pureStates [minIndex - 4].set (byte (strconv.Atoi (value.(*_state).state ())))
 				}
-				if (minIndex - 3) > 0 && pureStates [minIndex - 3] == -1 {
-					pureStates [minIndex - 3] = byte (strconv.Atoi (value.(_state).state ()))
+				if (minIndex - 3) >= 0 && pureStates [minIndex - 3].state () == -1 {
+					pureStates [minIndex - 3].set (byte (strconv.Atoi (value.(*_state).state ())))
 				}
-				if (minIndex - 2) > 0 && pureStates [minIndex - 2] == -1 {
-					pureStates [minIndex - 2] = byte (strconv.Atoi (value.(_state),state ()))
+				if (minIndex - 2) >= 0 && pureStates [minIndex - 2].state () == -1 {
+					pureStates [minIndex - 2].set (byte (strconv.Atoi (value.(*_state).state ())))
 				}
-				if (minIndex - 1) > 0 && pureStates [minIndex - 1] == -1 {
-					pureStates [minIndex - 1] = byte (strconv.Atoi (value.(_state).state ()))
+				if (minIndex - 1) >= 0 && pureStates [minIndex - 1].state () == -1 {
+					pureStates [minIndex - 1].set (byte (strconv.Atoi (value.(*_state).state ())))
 				}
-				pureStates [minIndex] = byte (strconv.Atoi (value.(_state).state ()))
+
+				pureStates [minIndex].set (byte (strconv.Atoi (value.(_state).state ())))
 			}
 			day [dayID] = pureStates
 		}
