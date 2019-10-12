@@ -101,7 +101,7 @@ func locationsSensors (locations []string) (*_locationsSensors, error) {
 	// | --
 	interfacedData := []interface {}{}
 	for _, value := range locations {
-		interfacedData := append (interfacedData, value)
+		interfacedData = append (interfacedData, value)
 	}
 	// -- |
 	result, errY := db.Query (query, interfacedData...)

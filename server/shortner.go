@@ -3,12 +3,14 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"gopkg.in/gorilla/mux.v1"
 	"gopkg.in/qamarian-dtp/err.v0" // v0.3.0
 	"gopkg.in/qamarian-lib/str.v2"
 	"gopkg.in/qamarian-lib/structs.v0" // v0.1.0
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -53,7 +55,7 @@ func (d *requestData) fetchRecords () (*requestRecords) {
 	// | --
 	interfacedDataX := []interface {}{}
 	for _, value := range onlySensorIDs {
-		interfacedDataX := append (interfacedDataX, value)
+		interfacedDataX = append (interfacedDataX, value)
 	}
 	// -- |
 	resultSetB, errB := db.Query (queryC, interfacedDataX...)
@@ -77,7 +79,7 @@ func (d *requestData) fetchRecords () (*requestRecords) {
 			panic (err_)
 		}
 
-		states := append (states, _state_New (state, day, time, sensor))
+		states = append (states, _state_New (state, day, time, sensor))
 	}
 	// ..1.. }
 
@@ -127,7 +129,7 @@ func (d *_requestData) validate () (error) {
 		}
 
 		for index := 1; index <= len (locationData) - 1; index ++ {
-			if ! dayMonthYear.Match (locationData [index]) {
+			if ! dayMonthYear.Match ([]byte (locationData [index])) {
 				return errors.New ("Data of an invalid day requested for a location.")
 			}
 		}
@@ -192,7 +194,13 @@ func (r *requestRecords) group () (result *groupedRequestRecords) {
 	}
 	// .. }
 
-	sensorsRecords, errY := structs.Group ("Sensor", r.value...)
+	// | --
+	interfacedDataX := []interface {}{}
+	for _, value := range r.value {
+		interfacedDataX = append (interfacedDataX, value)
+	}
+	// -- |
+	sensorsRecords, errY := structs.Group ("Sensor", interfacedDataX...)
 	if errY != nil {
 		err_ := err.New (oprErr8.Error (), oprErr8.Class (), oprErr8.Type (), errY)
 		panic (err_)
@@ -209,7 +217,7 @@ func (r *requestRecords) group () (result *groupedRequestRecords) {
 			panic (err_)
 		}
 		sensorID := iter.Key ().Interface ().(string)
-		groupedRecords.add (sensorID, organizedSensorRecords)
+		groupedRecords.addSensorRecords (sensorID, organizedSensorRecords)
 	}
 
 	return groupedRecords
@@ -227,19 +235,19 @@ type _state struct {
 }
 
 func (s *_state) state () (string) {
-	return s.state
+	return s.State
 }
 
 func (s *_state) day () (string) {
-	return s.day
+	return s.Day
 }
 
 func (s *_state) time () (string) {
-	return s.time
+	return s.Time
 }
 
 func (s *_state) sensor () (string) {
-	return s.sensor
+	return s.Sensor
 }
 
 // -- Boundary -- //
@@ -249,7 +257,7 @@ func groupedRequestRecords_New () (*groupedRequestRecords) {
 }
 
 type groupedRequestRecords struct {
-	value map[string] map[string] []_state
+	value map[string] map[string][]*_state
 }
 
 func (r *groupedRequestRecords) addSensorRecords (sensorID string, record map[string][]*_state) {
@@ -259,16 +267,16 @@ func (r *groupedRequestRecords) addSensorRecords (sensorID string, record map[st
 func (r *groupedRequestRecords) complete () (*completeData) {
 	// Function definitions. ..1.. {
 	completeDays := func (days map[interface {}] []interface {}) (map[string][1440]*_pureState) {
-		day := map[string][1440]_pureState {}
+		day := map[string][1440]*_pureState {}
 
-		iter := relect.ValueOf (day).MapRange ()
+		iter := reflect.ValueOf (days).MapRange ()
 		for iter.Next () {
-			dayID := iter.Key ().(string)
-			dayStates := iter.Value ().([]interface {})
+			dayID := iter.Key ().Interface ().(string)
+			dayStates := iter.Value ().Interface ().([]interface {})
 
 			pureStates := [1440]*_pureState {}
 			for index, _ := range pureStates {
-				pureStates [index] = _pureState_New (-1)
+				pureStates [index] = _pureState_New (2)
 			}
 
 			for _, value := range dayStates {
@@ -283,19 +291,24 @@ func (r *groupedRequestRecords) complete () (*completeData) {
 				minIndex := min - 1
 
 				if (minIndex - 4) >= 0 && pureStates [minIndex - 4].state () == -1 {
-					pureStates [minIndex - 4].set (byte (strconv.Atoi (value.(*_state).state ())))
+					intValue, _ := strconv.Atoi (value.(*_state).state ())
+					pureStates [minIndex - 4].set (int8 (intValue))
 				}
 				if (minIndex - 3) >= 0 && pureStates [minIndex - 3].state () == -1 {
-					pureStates [minIndex - 3].set (byte (strconv.Atoi (value.(*_state).state ())))
+					intValue, _ := strconv.Atoi (value.(*_state).state ())
+					pureStates [minIndex - 3].set (int8 (intValue))
 				}
 				if (minIndex - 2) >= 0 && pureStates [minIndex - 2].state () == -1 {
-					pureStates [minIndex - 2].set (byte (strconv.Atoi (value.(*_state).state ())))
+					intValue, _ := strconv.Atoi (value.(*_state).state ())
+					pureStates [minIndex - 2].set (int8 (intValue))
 				}
 				if (minIndex - 1) >= 0 && pureStates [minIndex - 1].state () == -1 {
-					pureStates [minIndex - 1].set (byte (strconv.Atoi (value.(*_state).state ())))
+					intValue, _ := strconv.Atoi (value.(*_state).state ())
+					pureStates [minIndex - 1].set (int8 (intValue))
 				}
 
-				pureStates [minIndex].set (byte (strconv.Atoi (value.(_state).state ())))
+				intValue, _ := strconv.Atoi (value.(*_state).state ())
+				pureStates [minIndex].set (int8 (intValue))
 			}
 			day [dayID] = pureStates
 		}
@@ -308,8 +321,8 @@ func (r *groupedRequestRecords) complete () (*completeData) {
 		
 	iter := reflect.ValueOf (r).MapRange ()
 	for iter.Next () {
-		sensorID := iter.Key ().(string)
-		sensorData := completeDays (iter.Value ().(map[interface {}] []interface {}))
+		sensorID := iter.Key ().Interface ().(string)
+		sensorData := completeDays (iter.Value ().Interface ().(map[interface {}] []interface {}))
 		data.add (sensorID, sensorData)
 	}
 
@@ -332,16 +345,16 @@ func (d *completeData) add (sensorID string, data map[string][1440]*_pureState) 
 
 func (d *completeData) format () (*formattedData) {
 	// Function definitions. ..1.. {
-	formatDays := func (days map[string][1440]*_pureState) (map[string] []_formattedState) {
+	formatDays := func (days map[string][1440]*_pureState) (map[string] []*_formattedState) {
 		formattedDays := map[string][]*_formattedState {}
 
 		iter := reflect.ValueOf (days).MapRange ()
 		for iter.Next () {
 			formattedStates := []*_formattedState {}
 
-			dayID := iter.Key.(string)
-			dayStates := day [dayID]
-			currentState, _ := dayStates[0].state ()
+			dayID := iter.Key ().Interface ().(string)
+			dayStates := days [dayID]
+			currentState := dayStates[0].state ()
 
 			for index, value := range dayStates {
 				if currentState != value.state () {
@@ -351,7 +364,7 @@ func (d *completeData) format () (*formattedData) {
 					hour := ((index + 1) - hourMin) / 60
 					hr := str.PrependTillN (strconv.Itoa (hour), "0", 2)
 					mn := str.PrependTillN (strconv.Itoa (hourMin), "0", 2)
-					time := fmt.Sprintf ("%s%s", hr, min)
+					time := fmt.Sprintf ("%s%s", hr, mn)
 
 					someState := _formattedState_New (value.state (), time)
 					formattedStates = append (formattedStates, someState)
@@ -375,7 +388,7 @@ func (d *completeData) format () (*formattedData) {
 
 	iter := reflect.ValueOf (d.value).MapRange ()
 	for iter.Next () {
-		sensorID := iter.Key ().(string)
+		sensorID := iter.Key ().Interface ().(string)
 		sensorData := formatDays (d.value [sensorID])
 		data.addSensor (sensorID, sensorData)
 	}
@@ -383,41 +396,45 @@ func (d *completeData) format () (*formattedData) {
 	return data
 }
 
-func _pureState_New (state byte) (*_pureState) {
+func _pureState_New (state int8) (*_pureState) {
 	var pureState _pureState
-	pureState = state
+	pureState = _pureState {state}
 	return &pureState
 }
 
-type _pureState byte
-
-func (s *_pureState) set (state byte) {
-	*s = state
+type _pureState struct {
+	value int8
 }
 
-func (s *_pureState) state () (byte) {
-	return byte (s)
+func (s *_pureState) set (state int8) {
+	(*s).value = state
+}
+
+func (s *_pureState) state () (int8) {
+	return (*s).value
 }
 
 // -- Boundary -- //
 
 func formattedData_New () (*formattedData) {
-	return &map[string] map[string][]*_formattedState {}
+	return & formattedData {map[string] map[string][]*_formattedState {}}
 }
 
-type formattedData map[string] map[string][]*_formattedState
+type formattedData struct {
+	value map[string] map[string][]*_formattedState
+}
 
 func (d *formattedData) addSensor (sensorID string, record map[string][]*_formattedState) {
-	*d [sensorID] = record
+	(*d).value [sensorID] = record
 }
 
 func (d *formattedData) marshal () (output *marshalledData) {
 	output = marshalledData_New ()
 
-	iter := reflect.ValueOf (d).MapRange ()
+	iter := reflect.ValueOf ((*d).value).MapRange ()
 	for iter.Next () {
-		sensorID := iter.Key ().(string)
-		sensorData := iter.Key ().(map[string][]*_formattedState)
+		sensorID := iter.Key ().Interface ().(string)
+		sensorData := iter.Value ().Interface ().(map[string][]*_formattedState)
 		data, errX := json.Marshal (sensorData)
 		if errX != nil {
 			err_ := err.New (oprErr11.Error (), oprErr11.Class (), oprErr11.Type (), errX)
@@ -429,35 +446,38 @@ func (d *formattedData) marshal () (output *marshalledData) {
 	return output
 }
 
-func _formattedState_New (state byte, endTime string) (*_formattedState) {
+func _formattedState_New (state int8, endTime string) (*_formattedState) {
 	return &_formattedState	{state, endTime}
 }
 
 type _formattedState struct {
-	State byte
+	State int8
 	EndTime string
 }
 
-func (s *_formattedState) state () (byte) {
-	return r.State
+func (s *_formattedState) state () (int8) {
+	return (*s).State
 }
 
 func (s *_formattedState) endTime () (string) {
-	return r.EndTime
+	return (*s).EndTime
 }
 
 // -- Boundary -- //
 
 func marshalledData_New () (*marshalledData) {
-	return &marshalledData {}
+	return &marshalledData {map[string]string {}}
 }
 
-type marshalledData map[string]string
+type marshalledData struct {
+	value map[string]string
+}
 
 func (d *marshalledData) addSensorData (sensorID, data string) {
-	*d [sensorID] = data
+	(*d).value [sensorID] = data
 }
 
 func (d *marshalledData) getSensorData (sensorID string) (string, bool) {
-	return *d [sensorID]
+	value, okX := (*d).value [sensorID]
+	return value, okX
 }
