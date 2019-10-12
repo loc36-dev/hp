@@ -323,7 +323,7 @@ func (d *completeData) add (sensorID string, data map[string][1440]*_pureState) 
 	d.value [sensorID] = data
 }
 
-func (d *completeData) format () (*formatedData) {
+func (d *completeData) format () (*formattedData) {
 	// Function definitions. ..1.. {
 	formatDays := func (days map[string][1440]*_pureState) (map[string] []_formattedState) {
 		formattedDays := map[string][]*_formattedState {}
