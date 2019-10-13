@@ -65,7 +65,7 @@ func (d *requestData) fetchRecords () (*requestRecords) {
 
 	var (
 		states []*_state
-		state string
+		state int8
 		day string
 		time string
 		sensor string
@@ -210,13 +210,13 @@ func (r *requestRecords) group () (result *groupedRequestRecords) {
 	iter := reflect.ValueOf (sensorsRecords).MapRange ()
 	for iter.Next () {
 		sensorRecords := iter.Value ().Interface ().([]interface {})
-		organizedSensorRecords, errQ := organizeByDay (sensorRecords)
+		groupedSensorRecords, errQ := organizeByDay (sensorRecords)
 		if errQ != nil {
 			err_ := err.New (lib.OprErr10.Error (), lib.OprErr10.Class (), lib.OprErr10.Type (), errQ)
 			panic (err_)
 		}
 		sensorID := iter.Key ().Interface ().(string)
-		groupedRecords.addSensorRecords (sensorID, organizedSensorRecords)
+		groupedRecords.addSensorRecords (sensorID, groupedSensorRecords)
 	}
 
 	return groupedRecords

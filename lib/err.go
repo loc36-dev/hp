@@ -72,9 +72,9 @@ func init () {
 	OprErr5 = err.New ("Unable to fetch the states of all locations.", OprErrID, iotaOpr.Value ())
 	OprErr6 = err.New ("Unable to fetch a state data.", OprErrID, iotaOpr.Value ())
 	OprErr7 = err.New ("Unable to make request records a squaket.", OprErrID, iotaOpr.Value ())
-	OprErr8 = err.New ("Unable to organize request records, based on sensor.", OprErrID, iotaOpr.Value ())
+	OprErr8 = err.New ("Unable to group request records, based on sensor.", OprErrID, iotaOpr.Value ())
 	OprErr9 = err.New ("Unable to make records of a sensor a squaket.", OprErrID, iotaOpr.Value ())
-	OprErr10 = err.New ("Unable to organize records of a sensor, based on day.", OprErrID, iotaOpr.Value ())
+	OprErr10 = err.New ("Unable to group records of a sensor, based on day.", OprErrID, iotaOpr.Value ())
 	OprErr11 = err.New ("A sensor record could not be marshalled.", OprErrID, iotaOpr.Value ())
 }
 	
