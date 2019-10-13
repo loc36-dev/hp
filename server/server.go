@@ -2,12 +2,9 @@ package server
 
 import (
 	"fmt"
-	"io"
 	"gopkg.in/qamarian-dtp/err.v0" // 0.4.0
 	errLib "gopkg.in/qamarian-lib/err.v0" // 0.4.0
-	"log"
 	"net/http"
-	"os"
 	"../lib"
 )
 
@@ -33,7 +30,7 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 			if okX == true {
 				errDetails = fmt.Sprintf ("An error occured. [%s]", errLib.Fup (&reason))
 			}
-			stdErr.Write ([]byte (errDetails))
+			lib.StdErr.Write ([]byte (errDetails))
 
 			return
 		}
@@ -82,12 +79,10 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 }
 
 var (
-	stdErr io.Writer = os.Stderr
-	conf string
 	outputFormat string = `{
 
 ServiceID: "0",
-Version: "v0.1.0",
+Version: "0.1.0",
 Response: "%s",
 Details: "%s",
 Data: {
@@ -96,7 +91,3 @@ Data: {
 
 }`
 )
-
-func init () {
-	stdErr = log.New (stdErr, "", log.Ldate | log.Ltime).Writer ()
-}

@@ -222,18 +222,18 @@ func (r *requestRecords) group () (result *groupedRequestRecords) {
 	return groupedRecords
 }
 
-func _state_New (state, day, time, sensor string) (*_state) {
+func _state_New (state int8, day, time, sensor string) (*_state) {
 	return &_state {state, day, time, sensor}
 }
 
 type _state struct {
-	State  string
+	State  int8
 	Day    string
 	Time   string
 	Sensor string
 }
 
-func (s *_state) state () (string) {
+func (s *_state) state () (int8) {
 	return s.State
 }
 
@@ -290,24 +290,19 @@ func (r *groupedRequestRecords) complete () (*completeData) {
 				minIndex := min - 1
 
 				if (minIndex - 4) >= 0 && pureStates [minIndex - 4].state () == -1 {
-					intValue, _ := strconv.Atoi (value.(*_state).state ())
-					pureStates [minIndex - 4].set (int8 (intValue))
+					pureStates [minIndex - 4].set (value.(*_state).state ())
 				}
 				if (minIndex - 3) >= 0 && pureStates [minIndex - 3].state () == -1 {
-					intValue, _ := strconv.Atoi (value.(*_state).state ())
-					pureStates [minIndex - 3].set (int8 (intValue))
+					pureStates [minIndex - 3].set (value.(*_state).state ())
 				}
 				if (minIndex - 2) >= 0 && pureStates [minIndex - 2].state () == -1 {
-					intValue, _ := strconv.Atoi (value.(*_state).state ())
-					pureStates [minIndex - 2].set (int8 (intValue))
+					pureStates [minIndex - 2].set (value.(*_state).state ())
 				}
 				if (minIndex - 1) >= 0 && pureStates [minIndex - 1].state () == -1 {
-					intValue, _ := strconv.Atoi (value.(*_state).state ())
-					pureStates [minIndex - 1].set (int8 (intValue))
+					pureStates [minIndex - 1].set (value.(*_state).state ())
 				}
 
-				intValue, _ := strconv.Atoi (value.(*_state).state ())
-				pureStates [minIndex].set (int8 (intValue))
+				pureStates [minIndex].set (value.(*_state).state ())
 			}
 			day [dayID] = pureStates
 		}
