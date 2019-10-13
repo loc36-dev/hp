@@ -8,10 +8,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"../lib"
 )
 
 func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
-	// Error handling. ...1... {
+	// Error handling. ..1.. {
 	defer func () {
 		panicReason := recover ()
 		if panicReason == nil {
@@ -20,7 +21,7 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 
 		reason, okX := panicReason.(err.Error)
 
-		if okX == true && reason.Class ().Cmp (invErrID) == 0 {
+		if okX == true && reason.Class ().Cmp (lib.InvErrID) == 0 {
 			errDetails := fmt.Sprintf ("Invalid request data. [%s]", errLib.Fup (&reason))
 			w.Write ([]byte (fmt.Sprintf (outputFormat, "rsp1", errDetails, "")))
 
@@ -37,7 +38,7 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} ()
-	// ...1... }
+	// ..1.. }
 
 	databaseRecords := requestData_New (r).fetchRecords ()
 	gData := databaseRecords.group ()
@@ -45,12 +46,12 @@ func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
 	fData := cData.format ()
 	mData := fData.marshal ()
 
-	// Present organized records. ...1... {
+	// Present organized records. ..1.. {
 	//|--
 	locationsIDs := extractLocationIDs (r)
 	sensors, errX := locationsSensors (locationsIDs)
 	if errX != nil {
-		err_ := err.New (oprErr3.Error (), oprErr3.Class (), oprErr3.Type (), errX)
+		err_ := err.New (lib.OprErr3.Error (), lib.OprErr3.Class (), lib.OprErr3.Type (), errX)
 		panic (err_)
 	}
 
@@ -85,10 +86,10 @@ var (
 	conf string
 	outputFormat string = `{
 
-ServiceID: "0"
-Version: "v0.1.0"
+ServiceID: "0",
+Version: "v0.1.0",
 Response: "%s",
-Details: "%s"
+Details: "%s",
 Data: {
 %s
 }

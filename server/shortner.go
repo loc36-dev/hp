@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"../lib"
 )
 
 func requestData_New (request *http.Request) (*requestData) {
@@ -25,11 +26,9 @@ type requestData struct {
 // fetchRecords () fetches all location state records matching the request of the user.
 func (d *requestData) fetchRecords () (*requestRecords) {
 	// Request data validation and retrieval. ..1.. {
-	var errX error
-
-	errX = _requestData_New (d.value).validate ()
+	errX := _requestData_New (d.value).validate ()
 	if errX != nil {
-		err_ := err.New (oprErr9.Error (), oprErr9.Class (), oprErr9.Type (), errX)
+		err_ := err.New (lib.InvErr9.Error (), lib.InvErr9.Class (), lib.InvErr9.Type (), errX)
 		panic (err_)
 	}
 	// ..1.. }
@@ -37,7 +36,7 @@ func (d *requestData) fetchRecords () (*requestRecords) {
 	// Fetching sensor IDs of all locations. ..1.. {
 	sensors, errY := locationsSensors (extractLocationIDs (d.value))
 	if errY != nil {
-		err_ := err.New (oprErr3.Error (), oprErr3.Class (), oprErr3.Type (), errY)
+		err_ := err.New (lib.OprErr3.Error (), lib.OprErr3.Class (), lib.OprErr3.Type (), errY)
 		panic (err_)
 	}
 	onlySensorIDs := sensors.sensors ()
@@ -60,7 +59,7 @@ func (d *requestData) fetchRecords () (*requestRecords) {
 	// -- |
 	resultSetB, errB := db.Query (queryC, interfacedDataX...)
 	if errB != nil {
-		err_ := err.New (oprErr5.Error (), oprErr5.Class (), oprErr5.Type (), errB)
+		err_ := err.New (lib.OprErr5.Error (), lib.OprErr5.Class (), lib.OprErr5.Type (), errB)
 		panic (err_)
 	}
 
@@ -75,7 +74,7 @@ func (d *requestData) fetchRecords () (*requestRecords) {
 	for resultSetB.Next () {
 		errC := resultSetB.Scan (&state, &day, &time, &sensor)
 		if errC != nil {
-			err_ := err.New (oprErr6.Error (), oprErr6.Class (), oprErr6.Type (), errC)
+			err_ := err.New (lib.OprErr6.Error (), lib.OprErr6.Class (), lib.OprErr6.Type (), errC)
 			panic (err_)
 		}
 
@@ -202,7 +201,7 @@ func (r *requestRecords) group () (result *groupedRequestRecords) {
 	// -- |
 	sensorsRecords, errY := structs.Group ("Sensor", interfacedDataX...)
 	if errY != nil {
-		err_ := err.New (oprErr8.Error (), oprErr8.Class (), oprErr8.Type (), errY)
+		err_ := err.New (lib.OprErr8.Error (), lib.OprErr8.Class (), lib.OprErr8.Type (), errY)
 		panic (err_)
 	}
 
@@ -213,7 +212,7 @@ func (r *requestRecords) group () (result *groupedRequestRecords) {
 		sensorRecords := iter.Value ().Interface ().([]interface {})
 		organizedSensorRecords, errQ := organizeByDay (sensorRecords)
 		if errQ != nil {
-			err_ := err.New (oprErr10.Error (), oprErr10.Class (), oprErr10.Type (), errQ)
+			err_ := err.New (lib.OprErr10.Error (), lib.OprErr10.Class (), lib.OprErr10.Type (), errQ)
 			panic (err_)
 		}
 		sensorID := iter.Key ().Interface ().(string)
@@ -437,7 +436,7 @@ func (d *formattedData) marshal () (output *marshalledData) {
 		sensorData := iter.Value ().Interface ().(map[string][]*_formattedState)
 		data, errX := json.Marshal (sensorData)
 		if errX != nil {
-			err_ := err.New (oprErr11.Error (), oprErr11.Class (), oprErr11.Type (), errX)
+			err_ := err.New (lib.OprErr11.Error (), lib.OprErr11.Class (), lib.OprErr11.Type (), errX)
 			panic (err_)
 		}
 		output.addSensorData (sensorID, string (data))
