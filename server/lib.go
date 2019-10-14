@@ -9,11 +9,11 @@ import (
 	errLib "gopkg.in/qamarian-lib/err.v0" // v0.4.0
 	"gopkg.in/qamarian-lib/str.v2" // v3.0.0
 	"net/http"
+	"net/url"
+	"os"
 	"reflect"
 	"regexp"
 	"strings"
-	"net/url"
-	"os"
 	"../lib"
 )
 
@@ -30,8 +30,8 @@ func init () {
 	dayMonthYear, errX = regexp.Compile (`^20\d{2}(0[1-9]|1[0-2)(0[1-9]|[1-2]\d|3[0-1])$`)
 	if errX != nil {
 		errY := err.New ("Regular expression compilation failed.", nil, nil, errX)
-		str.PrintEtr (errLib.Fup (errY), "err", "init ()")
-		os.Exit (1)
+		initAcct = errY
+		return
 	}
 	// ..1..}
 
@@ -41,8 +41,8 @@ func init () {
 	conf, errA := lib.NewConf ()
 	if errA != nil {
 		errB := err.New ("Unable to load service's configuration.", nil, nil, errA)
-		str.PrintEtr (errLib.Fup (errB), "err", "init ()")
-		os.Exit (1)
+		initAcct = errB
+		return
 	}
 
 	connURL := fmt.Sprintf (connURLFormat, url.QueryEscape ((*conf) ["username"]), url.QueryEscape ((*conf) ["pass"]), url.QueryEscape ((*conf) ["dbms_addr"]), url.QueryEscape ((*conf) ["dbms_port"]), url.QueryEscape ((*conf) ["db"]), url.QueryEscape ((*conf) ["conn_timeout"]), url.QueryEscape ((*conf) ["dbms_pub_key"]), url.QueryEscape ((*conf) ["write_timeout"]), url.QueryEscape ((*conf) ["read_timeout"]))
@@ -51,15 +51,15 @@ func init () {
 	db, errC = sql.Open ("mysql", connURL)
 	if errC != nil {
 		errD := err.New ("Database unreachable.", nil, nil, errC)
-		str.PrintEtr (errLib.Fup (errD), "err", "init ()")
-		os.Exit (1)
+		initAcct = errD
+		return
 	}
 
 	errE := db.Ping ()
 	if errE != nil {
 		errF := err.New ("Database unreachable.", nil, nil, errE)
-		str.PrintEtr (errLib.Fup (errF), "err", "init ()")
-		os.Exit (1)
+		initAcct = errF
+		return
 	}
 	// ..1.. }
 }
@@ -151,4 +151,15 @@ func (l *_locationsSensors) sensors () ([]string) {
 
 	return output
 }
+
+// -- Boundary -- //
+
+var (
+	initAcct error = nil
+)
+
+func InitAcct () (error) {
+	return initAcct
+}
+
 // -- Boundary -- //
