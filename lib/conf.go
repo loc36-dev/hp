@@ -184,5 +184,5 @@ func (c *Conf) Get (name string) (string) {
 }
 
 var (
-	confFileName string = "./confFile.yml"
+	confFileName string = "./conf.yml"
 )

@@ -8,7 +8,7 @@ import (
 	"../lib"
 )
 
-func serviceRequestServer (w http.ResponseWriter, r *http.Request) {
+func ServiceRequestServer (w http.ResponseWriter, r *http.Request) {
 	// Error handling. ..1.. {
 	defer func () {
 		panicReason := recover ()
