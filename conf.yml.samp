@@ -1,3 +1,5 @@
+# This file is the configuration file for this service. To run this service, copy this file to the directory where the service executeable is. Modify the data in this file, as appropriate. Rename this file from "conf.yml.samp" to "conf.yml".
+
 # Server conf
 
 service_addr: "" # ipv4
